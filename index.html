@@ -2,199 +2,208 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>出貨紀錄 (白底版)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>出貨紀錄 (極簡版)</title>
     <style>
-        /* 修改處：背景改白，文字改黑 */
+        /* 基礎設定 */
         body { 
             font-family: "微軟正黑體", sans-serif; 
-            text-align: center; 
-            background: #FFFFFF; /* 白底 */
-            color: #333333;      /* 黑字 */
-            padding: 10px; 
-            margin: 0; 
-        }
-        
-        /* 操作區塊：改為淺灰底，讓輸入框明顯一點 */
-        .control-group { 
-            margin-bottom: 10px; 
-            background: #f8f9fa; /* 淺灰 */
-            padding: 15px; 
-            border-radius: 8px; 
-            text-align: left; 
-            border: 1px solid #ddd; /* 淺灰邊框 */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        /* 標籤文字加深 */
-        label { 
-            display: block; 
-            margin-top: 5px; 
-            font-size: 14px; 
+            background: #FFFFFF; 
             color: #333; 
-            font-weight: bold; 
+            margin: 0; 
+            padding: 5px; /* 極小邊距 */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
         }
 
-        /* 輸入框樣式 */
-        select, input { 
-            width: 100%; 
-            padding: 10px; 
-            font-size: 16px; 
-            margin-bottom: 8px; 
-            border: 1px solid #ccc; 
-            border-radius: 4px; 
-            box-sizing: border-box; 
-            background: #fff; 
-            color: #000; 
-        }
-        
-        option { padding: 10px; }
-
-        /* 相機邊框改為深色 */
-        #camera-box { 
-            position: relative; 
-            width: 100%; 
-            max-width: 600px; 
-            margin: 0 auto; 
-            background: #000; 
-            border-radius: 4px; 
-            overflow: hidden; 
-            border: 2px solid #333; /* 深色邊框 */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        
-        video { width: 100%; display: block; }
-        
-        /* 拍照按鈕 (綠色) */
-        #snap-btn { 
-            width: 100%; 
-            max-width: 600px; 
-            padding: 12px; 
-            font-size: 18px; 
-            margin-top: 15px; 
-            cursor: pointer; 
-            background: #28a745; 
-            color: white; 
-            border: none; 
-            border-radius: 5px; 
-            font-weight: bold; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        /* 重置按鈕 (藍色) */
-        #reset-btn { 
-            width: 100%; 
-            max-width: 600px; 
-            padding: 12px; 
-            font-size: 18px; 
-            margin-bottom: 15px; 
-            cursor: pointer; 
-            background: #007bff; 
-            color: white; 
-            border: none; 
-            border-radius: 5px; 
-            font-weight: bold; 
-            display: block; 
-            margin-left: auto; 
-            margin-right: auto;
+        /* 1. 控制區塊：改用 Grid 佈局，極省空間 */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 左右兩欄 */
+            gap: 5px; /* 間距極小 */
+            margin-bottom: 5px;
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
         }
 
-        /* 結果區 */
-        #result-area { 
-            margin-top: 20px; 
-            display: none; 
-            padding-bottom: 60px; 
-            border-top: 1px solid #eee; 
-            padding-top: 20px;
+        /* 輸入框樣式優化 */
+        select, input {
+            width: 100%;
+            padding: 8px 5px; /* 縮小內距 */
+            font-size: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fff;
+            color: #333;
+            box-sizing: border-box;
+            height: 40px; /* 固定高度，整齊 */
         }
         
-        #result-image { 
-            width: 100%; 
-            max-width: 600px; 
-            border: 1px solid #ccc; 
-            margin-top: 10px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        
-        /* iPhone 提示框 */
-        .ios-alert {
-            background-color: #ffc107;
-            color: #000;
-            padding: 5px 10px;
-            border-radius: 20px;
-            margin: 0 auto 10px auto;
+        /* 標題小字 (稍微提示用) */
+        .grid-item span {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 2px;
             font-weight: bold;
-            font-size: 13px;
-            line-height: 1.4;
+        }
+
+        /* 2. 相機區塊：自動填滿剩餘空間 */
+        #camera-wrapper {
+            flex-grow: 1; /* 吃掉剩餘高度 */
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background: #000;
+            overflow: hidden;
+            border-radius: 4px;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center; /* 垂直置中 */
+            justify-content: center;
+        }
+        
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 讓畫面填滿不留黑邊 */
+        }
+
+        /* 3. 按鈕區 */
+        #snap-btn {
+            width: 100%;
+            max-width: 600px;
+            padding: 12px;
+            font-size: 16px;
+            margin: 8px auto 0 auto; /* 上方留一點點空隙 */
+            cursor: pointer;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        /* 結果區 (浮動層或覆蓋層，避免推擠版面) */
+        #result-area {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.98);
+            z-index: 999;
+            overflow-y: auto;
+            padding: 20px;
             text-align: center;
-            max-width: 90%;
+        }
+
+        #result-image {
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid #999;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        #reset-btn {
+            padding: 10px 30px;
+            font-size: 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,123,255,0.3);
+            margin-bottom: 15px;
+        }
+
+        .ios-alert {
+            background: #ffc107;
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
             display: inline-block;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
 
-    <!-- 頂部錨點 -->
-    <div id="top-anchor"></div>
-
-    <div class="control-group">
-        <div style="display:flex; gap:10px;">
-            <div style="flex:1;">
-                <label>📍 門市/DC</label>
-                <select id="location-select">
-                    <!-- 門市 (置頂) -->
-                    <option value="那瑪夏門市">那瑪夏門市</option>
-                    <option value="霧台門市">霧台門市</option>
-                    <option value="桃源門市">桃源門市</option>
-                    
-                    <!-- 其他據點/DC -->
-                    <option value="新市">新市</option>
-                    <option value="新市物流園區">新市物流園區</option>
-                    <option value="嘉義">嘉義</option>
-                    <option value="台中">台中</option>
-                    <option value="大肚">大肚</option>
-                    <option value="湖口">湖口</option>
-                    <option value="電研">電研</option>
-                    <option value="暖暖">暖暖</option>
-                    <option value="花蓮">花蓮</option>
-                </select>
-            </div>
-            <div style="flex:1;">
-                <label>📦 項目</label>
-                <select id="action-select">
-                    <option value="出貨紀錄">出貨紀錄</option>
-                    <option value="庫存調撥">庫存調撥</option>
-                    <option value="異常回報">異常回報</option>
-                    <option value="其他備註">其他備註</option>
-                </select>
-            </div>
+    <!-- 1. 極簡控制區 (2x2 排列) -->
+    <div class="controls-grid">
+        <!-- 左上：地點 -->
+        <div class="grid-item">
+            <span>📍 門市/DC</span>
+            <select id="location-select">
+                <option value="那瑪夏門市">那瑪夏門市</option>
+                <option value="霧台門市">霧台門市</option>
+                <option value="桃源門市">桃源門市</option>
+                <option value="新市">新市</option>
+                <option value="新市物流園區">新市物流園區</option>
+                <option value="嘉義">嘉義</option>
+                <option value="台中">台中</option>
+                <option value="大肚">大肚</option>
+                <option value="湖口">湖口</option>
+                <option value="電研">電研</option>
+                <option value="暖暖">暖暖</option>
+                <option value="花蓮">花蓮</option>
+            </select>
         </div>
 
-        <label>🙋‍♂️ 協助人員 (若無則選無，照片不顯示)</label>
-        <select id="person-select">
-            <option value="">無 (照片不顯示)</option>
-            <option value="早班ES人員">早班ES人員</option>
-            <option value="晚班ES人員">晚班ES人員</option>
-        </select>
+        <!-- 右上：項目 -->
+        <div class="grid-item">
+            <span>📦 項目</span>
+            <select id="action-select">
+                <option value="出貨紀錄">出貨紀錄</option>
+                <option value="庫存調撥">庫存調撥</option>
+                <option value="異常回報">異常回報</option>
+                <option value="其他備註">其他備註</option>
+            </select>
+        </div>
+
+        <!-- 左下：協助人員 -->
+        <div class="grid-item">
+            <span>🙋‍♂️ 協助人員</span>
+            <select id="person-select">
+                <option value="">無 (不顯示)</option>
+                <option value="早班ES人員">早班ES人員</option>
+                <option value="晚班ES人員">晚班ES人員</option>
+            </select>
+        </div>
+
+        <!-- 右下：數量備註 (新增) -->
+        <div class="grid-item">
+            <span>📝 備註/數量</span>
+            <input type="text" id="qty-input" placeholder="例: 2版5箱">
+        </div>
     </div>
 
-    <div id="camera-box">
+    <!-- 2. 相機區 (Flex Grow) -->
+    <div id="camera-wrapper">
         <video id="video" autoplay playsinline></video>
     </div>
 
+    <!-- 3. 拍照按鈕 -->
     <button id="snap-btn">📸 拍照存檔</button>
 
+    <!-- 隱藏畫布 -->
     <canvas id="canvas" style="display:none;"></canvas>
 
-    <!-- 結果區塊 -->
+    <!-- 4. 結果顯示區 (全螢幕覆蓋) -->
     <div id="result-area">
-        <button id="reset-btn">🔄 繼續拍下一張 (回上方)</button>
-        
-        <div class="ios-alert">
-            ⚠️ iPhone 請「長按圖片」並選擇「加入照片」
+        <div style="max-width: 600px; margin: 0 auto;">
+            <div class="ios-alert">⚠️ iPhone 請「長按圖片」加入照片</div>
+            <br>
+            <img id="result-image" src="" alt="Generated Photo">
+            <br>
+            <button id="reset-btn">🔄 繼續拍下一張</button>
         </div>
-        <br>
-        <img id="result-image" src="" alt="Generated Photo">
     </div>
 
     <script>
@@ -208,6 +217,7 @@
         const locationSelect = document.getElementById('location-select');
         const actionSelect = document.getElementById('action-select');
         const personSelect = document.getElementById('person-select');
+        const qtyInput = document.getElementById('qty-input'); // 新增
 
         // 1. 啟動相機
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
@@ -224,7 +234,8 @@
             
             const w = video.videoWidth;
             const h = video.videoHeight;
-            const footerHeight = h * 0.12; 
+            // 白底高度微調至 15% (為了容納可能的第三行備註)
+            const footerHeight = h * 0.15; 
             
             canvas.width = w;
             canvas.height = h + footerHeight;
@@ -240,38 +251,61 @@
             const loc = locationSelect.value;
             const act = actionSelect.value;
             const person = personSelect.value; 
+            const qty = qtyInput.value.trim(); // 取得數量備註
             const dateText = new Date().toLocaleDateString('zh-TW');
 
+            // 字體大小 (動態計算)
             const fontSizeMain = Math.floor(w * 0.035); 
             const fontSizeSub = Math.floor(w * 0.028); 
 
+            // 版面配置參數
             const padX = w * 0.03; 
-            const line1Y = h + (footerHeight * 0.4);
-            const line2Y = h + (footerHeight * 0.8);
+            // 第一行文字基準線
+            const line1Y = h + (footerHeight * 0.35);
+            // 第二行文字基準線
+            const line2Y = h + (footerHeight * 0.65);
+            // 第三行文字基準線 (備註用)
+            const line3Y = h + (footerHeight * 0.90);
 
             context.textAlign = "left";
-            context.fillStyle = "#000000";
+            context.fillStyle = "#000000"; // 黑色主字
 
-            // 左側
+            // --- 左側資訊 ---
+            // 1. 門市
             context.font = `bold ${fontSizeMain}px '微軟正黑體', Arial`;
             context.fillText(`門市/DC：${loc}`, padX, line1Y);
             
+            // 2. 項目
             context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
             context.fillText(`項目：${act}`, padX, line2Y);
 
-            // 右側
+            // --- 右側資訊 ---
             context.textAlign = "right";
             const rightX = w - padX;
 
+            // 1. 協助人員 (藍字)
             if (person !== "") {
                 context.font = `bold ${fontSizeSub}px '微軟正黑體', Arial`;
                 context.fillStyle = "#0056b3"; 
                 context.fillText(`麻煩 ${person} 協助，感謝`, rightX, line1Y);
+            } else {
+                // 如果沒有人，日期往上移一點，或是保持在第二行皆可。
+                // 這裡我們維持日期在第二行，保持版面整齊。
             }
 
+            // 2. 日期 (灰字)
             context.fillStyle = "#555";
             context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
             context.fillText(`日期：${dateText}`, rightX, line2Y);
+
+            // --- 新增：底部備註 (如果有輸入才顯示) ---
+            if (qty !== "") {
+                context.textAlign = "left"; // 靠左顯示
+                context.fillStyle = "#D32F2F"; // 用紅色強調
+                context.font = `bold ${fontSizeSub}px '微軟正黑體', Arial`;
+                // 顯示在最下方
+                context.fillText(`備註/數量：${qty}`, padX, line3Y);
+            }
 
             // 分隔線
             context.strokeStyle = "#ddd";
@@ -284,13 +318,13 @@
             // 輸出
             const dataURL = canvas.toDataURL('image/jpeg', 0.95);
             resultImage.src = dataURL;
-            resultArea.style.display = 'block';
             
-            resultArea.scrollIntoView({behavior: "smooth"});
+            // 顯示全螢幕結果層
+            resultArea.style.display = 'block';
 
             // Android 自動下載
             let filename = `${loc}_${act}`;
-            if(person !== "") filename += `_${person}`;
+            if(qty !== "") filename += `_${qty}`; // 檔名也加入備註
             filename += `_${dateText.replace(/\//g, '')}.jpg`;
 
             autoDownload(dataURL, filename);
@@ -300,7 +334,8 @@
         resetBtn.addEventListener('click', () => {
             resultArea.style.display = 'none';
             resultImage.src = "";
-            window.scrollTo({top: 0, behavior: 'smooth'});
+            // 清空備註欄位 (看需求，通常拍下一張可能數量不同，清空比較好)
+            // qtyInput.value = ""; 
         });
 
         function autoDownload(url, filename) {
