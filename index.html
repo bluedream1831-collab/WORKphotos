@@ -3,26 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>出貨紀錄系統 (簡潔版)</title>
+    <title>出貨紀錄 (自動隱藏版)</title>
     <style>
         body { font-family: "微軟正黑體", sans-serif; text-align: center; background: #222; color: white; padding: 10px; margin: 0; }
         
-        /* 輸入區塊 - 改為淺灰色讓視覺專注在螢幕 */
-        .control-group { margin-bottom: 10px; background: #333; padding: 10px; border-radius: 8px; text-align: left; border: 1px solid #555;}
-        label { display: block; margin-top: 5px; font-size: 14px; color: #ccc; }
-        select, input { width: 100%; padding: 8px; font-size: 16px; margin-bottom: 5px; border: 1px solid #555; border-radius: 4px; box-sizing: border-box; background: #fff; }
+        .control-group { margin-bottom: 8px; background: #333; padding: 10px; border-radius: 8px; text-align: left; border: 1px solid #555;}
+        label { display: block; margin-top: 5px; font-size: 13px; color: #ccc; }
+        select, input { width: 100%; padding: 8px; font-size: 15px; margin-bottom: 5px; border: 1px solid #555; border-radius: 4px; box-sizing: border-box; background: #fff; }
         
-        /* 相機畫面 - 盡量滿版 */
         #camera-box { position: relative; width: 100%; max-width: 600px; margin: 0 auto; background: #000; border-radius: 4px; overflow: hidden; border: 2px solid #555;}
         video { width: 100%; display: block; }
         
-        /* 拍照按鈕 */
         #snap-btn { width: 100%; max-width: 600px; padding: 12px; font-size: 18px; margin-top: 10px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold; }
         
-        /* 結果區 */
-        #result-area { margin-top: 15px; display: none; background: #222; padding-bottom: 50px;}
+        #result-area { margin-top: 15px; display: none; padding-bottom: 60px;}
         #result-image { width: 100%; max-width: 600px; border: 1px solid #555; }
-        .info-text { color: #aaa; font-size: 12px; margin-bottom: 5px; }
+        .info-text { color: #888; font-size: 12px; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -48,8 +44,8 @@
             </div>
         </div>
 
-        <label>🙋‍♂️ 協助人員 (若無則免填)</label>
-        <input type="text" id="person-input" placeholder="輸入姓名...">
+        <label>🙋‍♂️ 協助人員 (沒填則不顯示)</label>
+        <input type="text" id="person-input" placeholder="若無人協助請留空">
     </div>
 
     <div id="camera-box">
@@ -58,11 +54,10 @@
 
     <button id="snap-btn">📸 拍照存檔</button>
 
-    <!-- 隱藏的畫布 -->
     <canvas id="canvas" style="display:none;"></canvas>
 
     <div id="result-area">
-        <p class="info-text">✅ 照片已生成 (若未自動下載，請長按圖片儲存)</p>
+        <p class="info-text">✅ 已生成 (若無自動下載，請長按圖片儲存)</p>
         <img id="result-image" src="" alt="Generated Photo">
     </div>
 
@@ -83,7 +78,7 @@
                 video.srcObject = stream;
             })
             .catch(err => {
-                alert("無法開啟相機 (請確認 HTTPS 連線): " + err);
+                alert("相機開啟失敗: " + err);
             });
 
         // 2. 拍照邏輯
@@ -92,73 +87,79 @@
             
             const w = video.videoWidth;
             const h = video.videoHeight;
-            
-            // 修改：白底高度改為 18% (變很窄，不搶照片風采)
-            const footerHeight = h * 0.18; 
+            const footerHeight = h * 0.12; // 白底高度 12%
             
             canvas.width = w;
             canvas.height = h + footerHeight;
 
-            // A. 畫白底
+            // 畫白底
             context.fillStyle = "#FFFFFF";
             context.fillRect(0, 0, canvas.width, canvas.height);
 
-            // B. 畫照片
+            // 畫照片
             context.drawImage(video, 0, 0, w, h);
 
-            // C. 準備文字
+            // 準備資料
             const loc = locationSelect.value;
             const act = actionSelect.value;
-            const person = personInput.value.trim() !== "" ? personInput.value : "無";
-            // 修改：只抓取日期
-            const dateText = new Date().toLocaleDateString('zh-TW'); 
+            const personRaw = personInput.value.trim(); // 取得輸入的文字並去除前後空白
+            const dateText = new Date().toLocaleDateString('zh-TW');
 
-            // D. 寫字 (縮小字體)
-            // 設定邊距與起始點
-            const padX = 20; 
-            const startY = h + (footerHeight * 0.4); 
-            
+            // 計算字體大小
+            const fontSizeMain = Math.floor(w * 0.035); 
+            const fontSizeSub = Math.floor(w * 0.028); 
+
+            // 設定位置
+            const padX = w * 0.03; 
+            const line1Y = h + (footerHeight * 0.4);
+            const line2Y = h + (footerHeight * 0.8);
+
             context.textAlign = "left";
             context.fillStyle = "#000000";
 
-            // 我們把資訊分成左右兩邊寫，比較省空間
+            // 左側內容
+            context.font = `bold ${fontSizeMain}px '微軟正黑體', Arial`;
+            context.fillText(`地點：${loc}`, padX, line1Y);
             
-            // 左邊：地點 + 項目
-            context.font = "bold 32px '微軟正黑體', Arial"; // 字體變小 (原60)
-            context.fillText(`地點：${loc}`, padX, startY);
-            
-            context.font = "28px '微軟正黑體', Arial"; // 字體變小
-            context.fillText(`項目：${act}`, padX, startY + 40);
+            context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
+            context.fillText(`項目：${act}`, padX, line2Y);
 
-            // 右邊：協助人員 + 日期 (靠右對齊)
+            // 右側內容
             context.textAlign = "right";
             const rightX = w - padX;
 
-            context.font = "bold 28px '微軟正黑體', Arial";
-            // 如果是"無"，顯示灰色，如果有名字，顯示藍色
-            if(person === "無") context.fillStyle = "#888"; 
-            else context.fillStyle = "#0056b3";
-            
-            context.fillText(`協助：${person}`, rightX, startY);
+            // --- 關鍵修改：只有當 personRaw 不為空時，才把字寫上去 ---
+            if (personRaw !== "") {
+                context.font = `bold ${fontSizeSub}px '微軟正黑體', Arial`;
+                context.fillStyle = "#0056b3"; // 藍色
+                context.fillText(`協助：${personRaw}`, rightX, line1Y);
+            }
 
-            context.fillStyle = "#555"; // 日期用深灰
-            context.fillText(`日期：${dateText}`, rightX, startY + 40);
+            // 日期 (永遠顯示在第二行右邊)
+            context.fillStyle = "#555";
+            context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
+            context.fillText(`日期：${dateText}`, rightX, line2Y);
 
-            // E. 畫一條細線區隔照片與白底
-            context.strokeStyle = "#ccc";
-            context.lineWidth = 2;
+            // 分隔線
+            context.strokeStyle = "#ddd";
+            context.lineWidth = 1;
             context.beginPath();
             context.moveTo(0, h);
             context.lineTo(w, h);
             context.stroke();
 
-            // 3. 輸出與自動下載
-            const dataURL = canvas.toDataURL('image/jpeg', 0.9);
+            // 輸出
+            const dataURL = canvas.toDataURL('image/jpeg', 0.95);
             resultImage.src = dataURL;
             resultArea.style.display = 'block';
             resultArea.scrollIntoView({behavior: "smooth"});
 
-            autoDownload(dataURL, `${loc}_${act}_${dateText.replace(/\//g, '')}.jpg`);
+            // 自動下載檔名 (若有人名加在檔名裡，沒人名就不加)
+            let filename = `${loc}_${act}`;
+            if(personRaw !== "") filename += `_${personRaw}`;
+            filename += `_${dateText.replace(/\//g, '')}.jpg`;
+
+            autoDownload(dataURL, filename);
         });
 
         function autoDownload(url, filename) {
