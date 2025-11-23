@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>物流作業紀錄 (大字版)</title>
+    <title>物流作業紀錄 (防重疊版)</title>
     <style>
         /* 1. 基礎設定 */
         body { 
@@ -229,7 +229,6 @@
     <div id="login-screen">
         <div id="login-box">
             <h3>🔒 系統鎖定</h3>
-            <!-- 修改處：移除密碼提示 (8888) -->
             <p style="font-size:12px; color:#ccc;">請輸入員工通行碼</p>
             <input type="password" id="pass-input" placeholder="密碼" pattern="[0-9]*" inputmode="numeric">
             <button id="login-btn">登入</button>
@@ -346,21 +345,16 @@
         const loginBtn = document.getElementById('login-btn');
         const loginMsg = document.getElementById('login-msg');
 
-        // 檢查是否已經登入過
         function checkAutoLogin() {
-            const today = new Date().toDateString(); // 取得今天日期
+            const today = new Date().toDateString();
             const lastLoginDate = localStorage.getItem(LOGIN_KEY);
-
             if (lastLoginDate === today) {
-                // 日期一樣，略過登入
-                enterApp();
+                enterApp(); // 今天登入過，直接進
             } else {
-                // 日期不同，顯示登入畫面
-                loginScreen.style.display = "flex";
+                loginScreen.style.display = "flex"; // 沒登入過，顯示密碼頁
             }
         }
 
-        // 手動登入
         function manualLogin() {
             if (passInput.value === ACCESS_PASSWORD) {
                 const today = new Date().toDateString();
@@ -372,11 +366,10 @@
             }
         }
 
-        // 進入 App 主畫面
         function enterApp() {
             loginScreen.style.display = "none";
             appContent.style.display = "flex";
-            startCamera(); // 啟動相機
+            startCamera(); 
         }
 
         loginBtn.addEventListener('click', manualLogin);
@@ -408,7 +401,7 @@
                 })
                 .catch(err => {
                     console.error("Camera Error:", err);
-                    alert("相機開啟失敗。請確認：\n1.網址是 HTTPS 開頭\n2.已允許相機權限");
+                    alert("相機開啟失敗。請確認網址為 HTTPS 開頭並允許權限。");
                 });
         }
 
@@ -419,8 +412,8 @@
             const w = video.videoWidth;
             const h = video.videoHeight;
             
-            // 修改處：增加白底高度比例 (原本0.15 -> 改為0.22) 讓字有空間變大
-            const footerHeight = h * 0.22; 
+            // 修改處：白底高度增加到 28% 以容納四行字
+            const footerHeight = h * 0.28; 
             
             canvas.width = w;
             canvas.height = h + footerHeight;
@@ -444,50 +437,56 @@
             if(pVal !== "") qtyText += `${pVal}板 `;
             if(bVal !== "") qtyText += `${bVal}箱`;
             
-            // 修改處：字體放大 (原本 0.035/0.028 -> 改為 0.06/0.045)
+            // 字體設定 (維持大字)
             const fontSizeMain = Math.floor(w * 0.06); 
             const fontSizeSub = Math.floor(w * 0.045); 
             const padX = w * 0.03; 
             
-            // 調整行距位置
-            const line1Y = h + (footerHeight * 0.30);
-            const line2Y = h + (footerHeight * 0.60);
-            const line3Y = h + (footerHeight * 0.90);
+            // === 關鍵修改：四行排版，絕對不重疊 ===
+            // 第 1 行
+            const line1Y = h + (footerHeight * 0.20);
+            // 第 2 行
+            const line2Y = h + (footerHeight * 0.45);
+            // 第 3 行
+            const line3Y = h + (footerHeight * 0.70);
+            // 第 4 行
+            const line4Y = h + (footerHeight * 0.93);
 
             context.textAlign = "left";
             context.fillStyle = "#000000"; 
 
-            // 左側
+            // 行 1：地點 (左)
             if (loc !== "") {
                 context.font = `bold ${fontSizeMain}px '微軟正黑體', Arial`;
                 context.fillText(`門市/DC：${loc}`, padX, line1Y);
             }
             
+            // 行 2：項目 (左)
             context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
             const finalAct = act !== "" ? act : "無紀錄"; 
             context.fillText(`項目：${finalAct}`, padX, line2Y);
 
-            // 右側
-            context.textAlign = "right";
-            const rightX = w - padX;
-
+            // 行 3：交接人員 (右) - 獨立一行，避免撞到左邊
             if (person !== "") {
+                context.textAlign = "right";
                 context.font = `bold ${fontSizeSub}px '微軟正黑體', Arial`;
                 context.fillStyle = "#0056b3"; 
-                context.fillText(`麻煩 ${person} 協助，感謝`, rightX, line1Y);
+                context.fillText(`麻煩 ${person} 協助，感謝`, w - padX, line3Y);
             }
 
-            context.fillStyle = "#555";
-            context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
-            context.fillText(`日期：${dateText}`, rightX, line2Y);
-
+            // 行 4：數量 (左) & 日期 (右)
             // 數量
             if (qtyText !== "") {
                 context.textAlign = "left"; 
                 context.fillStyle = "#D32F2F"; 
                 context.font = `bold ${fontSizeSub}px '微軟正黑體', Arial`;
-                context.fillText(`數量：${qtyText}`, padX, line3Y);
+                context.fillText(`數量：${qtyText}`, padX, line4Y);
             }
+            // 日期
+            context.textAlign = "right";
+            context.fillStyle = "#555";
+            context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
+            context.fillText(`日期：${dateText}`, w - padX, line4Y);
 
             // 分隔線
             context.strokeStyle = "#ddd";
