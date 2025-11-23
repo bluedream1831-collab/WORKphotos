@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>物流作業紀錄 (最終優化版)</title>
+    <title>物流作業紀錄 (排版美化版)</title>
     <style>
         /* 1. 基礎設定 */
         body { 
             font-family: "微軟正黑體", sans-serif; 
-            background: #f4f4f4; /* 背景改稍微灰一點，突顯白框 */
+            background: #f4f4f4; 
             color: #333; 
             margin: 0; 
             padding: 10px; 
-            padding-bottom: 90px; /* 重要：預留底部按鈕的空間，防遮擋 */
+            padding-bottom: 90px; 
             min-height: 100vh; 
             display: flex;
             flex-direction: column;
@@ -26,7 +26,7 @@
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: #222;
-            z-index: 10000; /* 最高層級 */
+            z-index: 10000;
             display: flex; 
             flex-direction: column;
             align-items: center;
@@ -70,17 +70,17 @@
 
         /* --- 主程式區塊 --- */
         #app-content {
-            display: none; /* 登入後顯示 */
+            display: none; 
             flex-direction: column;
             width: 100%;
             max-width: 600px;
             margin: 0 auto;
         }
 
-        /* 2. 相機區塊 (置頂 + 高度適中) */
+        /* 2. 相機區塊 */
         #camera-wrapper {
             width: 100%;
-            height: 45vh; /* 佔螢幕高度 45%，留空間給下方 */
+            height: 45vh; 
             max-height: 400px;
             background: #000;
             overflow: hidden;
@@ -100,7 +100,7 @@
             object-fit: cover;
         }
 
-        /* 3. 控制區塊 (白底卡片式) */
+        /* 3. 控制區塊 */
         .controls-grid {
             display: grid;
             grid-template-columns: 1fr 1fr; 
@@ -111,7 +111,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
-        /* 標題小字 */
         .grid-item span.label-text {
             display: block;
             font-size: 13px; 
@@ -120,7 +119,6 @@
             font-weight: bold;
         }
 
-        /* 下拉選單 & 輸入框 */
         select, input {
             width: 100%;
             padding: 8px; 
@@ -133,13 +131,11 @@
             height: 42px; 
         }
 
-        /* 項目輸入框特別樣式 */
         #action-input {
             border: 1px solid #007bff; 
-            background-color: #f0f8ff; /* 淡藍底色突顯 */
+            background-color: #f0f8ff; 
         }
 
-        /* 板/箱 輸入框容器 */
         .input-group {
             display: flex;
             gap: 8px;
@@ -166,25 +162,24 @@
             pointer-events: none;
         }
 
-        /* 4. 拍照按鈕 (固定在底部，懸浮) */
+        /* 4. 拍照按鈕 */
         #snap-btn {
             position: fixed;
             bottom: 20px;
             left: 5%;
-            width: 90%; /* 左右留邊 */
-            max-width: 580px; /* 大螢幕不滿版 */
+            width: 90%; 
+            max-width: 580px; 
             padding: 15px;
             font-size: 18px;
             cursor: pointer;
-            background: linear-gradient(135deg, #28a745, #218838); /* 漸層綠 */
+            background: linear-gradient(135deg, #28a745, #218838); 
             color: white;
             border: none;
-            border-radius: 50px; /* 圓角按鈕 */
+            border-radius: 50px; 
             font-weight: bold;
             box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
             z-index: 999;
             letter-spacing: 1px;
-            /* 讓按鈕在大螢幕置中 */
             left: 50%;
             transform: translateX(-50%);
         }
@@ -199,7 +194,7 @@
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(255,255,255,0.98);
-            z-index: 10001; /* 比登入層級更高一點點，或相同 */
+            z-index: 10001; 
             overflow-y: auto; 
             padding: 20px;
             text-align: center;
@@ -261,7 +256,6 @@
 
         <!-- 2. 控制區 -->
         <div class="controls-grid">
-            <!-- 左上：地點 -->
             <div class="grid-item">
                 <span class="label-text">📍 門市/DC (自動記憶)</span>
                 <select id="location-select">
@@ -283,7 +277,6 @@
                 </select>
             </div>
 
-            <!-- 右上：項目 -->
             <div class="grid-item">
                 <span class="label-text">📦 項目 (可選/可自打)</span>
                 <input list="action-list" id="action-input" placeholder="選擇或輸入">
@@ -301,7 +294,6 @@
                 </datalist>
             </div>
 
-            <!-- 左下：交接人員 -->
             <div class="grid-item">
                 <span class="label-text">🙋‍♂️ 交接人員 (自動記憶)</span>
                 <select id="person-select">
@@ -313,7 +305,6 @@
                 </select>
             </div>
 
-            <!-- 右下：數量輸入 -->
             <div class="grid-item">
                 <span class="label-text">📝 數量 (填數字)</span>
                 <div class="input-group">
@@ -329,13 +320,10 @@
             </div>
         </div>
 
-        <!-- 3. 拍照按鈕 (固定底部) -->
         <button id="snap-btn">📸 拍照存檔</button>
 
-        <!-- 畫布 (隱藏) -->
         <canvas id="canvas" style="display:none;"></canvas>
 
-        <!-- 結果顯示區 -->
         <div id="result-area">
             <div style="max-width: 600px; margin: 0 auto; padding-top: 30px;">
                 <div class="ios-alert">⚠️ iPhone 請「長按圖片」加入照片</div>
@@ -346,7 +334,7 @@
             </div>
         </div>
 
-    </div> <!-- app-content end -->
+    </div>
 
     <script>
         // --- 設定與記憶鍵值 ---
@@ -355,7 +343,6 @@
         const STORAGE_LOC_KEY = "LOGISTICS_LAST_LOCATION";
         const STORAGE_PERSON_KEY = "LOGISTICS_LAST_PERSON";
 
-        // --- DOM 元素 ---
         const loginScreen = document.getElementById('login-screen');
         const appContent = document.getElementById('app-content');
         const passInput = document.getElementById('pass-input');
@@ -375,21 +362,16 @@
         const palletInput = document.getElementById('pallet-input');
         const boxInput = document.getElementById('box-input');
 
-        // --- 1. 登入邏輯 ---
+        // --- 登入與記憶 ---
         function checkAutoLogin() {
             const today = new Date().toDateString();
-            const lastLoginDate = localStorage.getItem(LOGIN_KEY);
-            if (lastLoginDate === today) {
-                enterApp(); 
-            } else {
-                loginScreen.style.display = "flex"; 
-            }
+            if (localStorage.getItem(LOGIN_KEY) === today) enterApp(); 
+            else loginScreen.style.display = "flex"; 
         }
 
         function manualLogin() {
             if (passInput.value === ACCESS_PASSWORD) {
-                const today = new Date().toDateString();
-                localStorage.setItem(LOGIN_KEY, today);
+                localStorage.setItem(LOGIN_KEY, new Date().toDateString());
                 enterApp();
             } else {
                 loginMsg.style.display = "block";
@@ -401,15 +383,12 @@
             loginScreen.style.display = "none";
             appContent.style.display = "flex";
             startCamera(); 
-            loadPreferences(); // 載入上次紀錄
+            loadPreferences();
         }
 
         loginBtn.addEventListener('click', manualLogin);
-        passInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') manualLogin();
-        });
+        passInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') manualLogin(); });
 
-        // --- 2. 記憶功能 (優化點) ---
         function loadPreferences() {
             const savedLoc = localStorage.getItem(STORAGE_LOC_KEY);
             const savedPerson = localStorage.getItem(STORAGE_PERSON_KEY);
@@ -417,48 +396,36 @@
             if (savedPerson) personSelect.value = savedPerson;
         }
 
-        // 當使用者改變選項時，立刻存入
-        locationSelect.addEventListener('change', () => {
-            localStorage.setItem(STORAGE_LOC_KEY, locationSelect.value);
-        });
-        personSelect.addEventListener('change', () => {
-            localStorage.setItem(STORAGE_PERSON_KEY, personSelect.value);
-        });
+        locationSelect.addEventListener('change', () => localStorage.setItem(STORAGE_LOC_KEY, locationSelect.value));
+        personSelect.addEventListener('change', () => localStorage.setItem(STORAGE_PERSON_KEY, personSelect.value));
 
-        // --- 3. 相機功能 ---
+        // --- 相機 ---
         function startCamera() {
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then(stream => {
-                    video.srcObject = stream;
-                })
-                .catch(err => {
-                    console.error("Camera Error:", err);
-                    alert("相機開啟失敗。請確認網址為 HTTPS 開頭並允許權限。");
-                });
+                .then(stream => video.srcObject = stream)
+                .catch(err => alert("相機開啟失敗，請確認 HTTPS 權限"));
         }
 
-        // --- 4. 拍照與合成邏輯 ---
+        // --- 拍照與繪圖 (核心修改處) ---
         snapBtn.addEventListener('click', () => {
             const context = canvas.getContext('2d');
-            
-            // 獲取影片原始尺寸
             const w = video.videoWidth;
             const h = video.videoHeight;
             
-            // 白底資訊區高度 (維持 30%)
-            const footerHeight = h * 0.30; 
+            // 增加底部白邊高度 (35%) 讓文字更舒適
+            const footerHeight = h * 0.35; 
             
             canvas.width = w;
             canvas.height = h + footerHeight;
 
-            // 1. 填入白底
+            // 1. 畫白底
             context.fillStyle = "#FFFFFF";
             context.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 2. 繪製當下影像
+            // 2. 畫照片
             context.drawImage(video, 0, 0, w, h);
 
-            // 3. 準備文字資料
+            // 3. 準備文字
             const loc = locationSelect.value;
             const act = actionInput.value; 
             const person = personSelect.value; 
@@ -470,89 +437,84 @@
             if(pVal !== "") qtyText += `${pVal}板 `;
             if(bVal !== "") qtyText += `${bVal}箱`;
             
-            // 4. 文字排版設定
-            const fontSizeMain = Math.floor(w * 0.06); 
-            const fontSizeSub = Math.floor(w * 0.045); 
-            const padX = w * 0.03; 
+            // 4. 文字設定 (字體大小)
+            const fontSizeL = Math.floor(w * 0.065); // 特大 (地點)
+            const fontSizeM = Math.floor(w * 0.05);  // 中 (項目/人員/數量)
+            const fontSizeS = Math.floor(w * 0.04);  // 小 (日期)
+            const padX = w * 0.04; // 左右邊距
             
-            // Y軸座標計算
-            const line1Y = h + (footerHeight * 0.20); // 門市
-            const line2Y = h + (footerHeight * 0.45); // 項目
-            const line3Y = h + (footerHeight * 0.70); // 數量 / 日期
-            const line4Y = h + (footerHeight * 0.92); // 人員 (最下方)
+            // === 排版座標計算 (三層結構) ===
+            // 第一層 Y (地點 & 日期)
+            const row1Y = h + (footerHeight * 0.22); 
+            // 第二層 Y (項目)
+            const row2Y = h + (footerHeight * 0.52); 
+            // 第三層 Y (數量 & 人員)
+            const row3Y = h + (footerHeight * 0.82); 
 
+            // --- Row 1: 左地點 / 右日期 ---
             context.textAlign = "left";
-            context.fillStyle = "#000000"; 
-
-            // --- 第一行：門市 ---
             if (loc !== "") {
-                context.font = `bold ${fontSizeMain}px '微軟正黑體', Arial`;
-                context.fillText(`門市/DC：${loc}`, padX, line1Y);
+                context.font = `bold ${fontSizeL}px '微軟正黑體', Arial`;
+                context.fillStyle = "#000"; 
+                context.fillText(`門市：${loc}`, padX, row1Y);
             }
-            
-            // --- 第二行：項目 ---
-            context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
-            const finalAct = act !== "" ? act : "無紀錄"; 
-            context.fillText(`項目：${finalAct}`, padX, line2Y);
 
-            // --- 第三行：數量(左) 日期(右) ---
-            // 數量
-            if (qtyText !== "") {
-                context.fillStyle = "#D32F2F"; // 紅字突顯
-                context.font = `bold ${fontSizeSub}px '微軟正黑體', Arial`;
-                context.fillText(`數量：${qtyText}`, padX, line3Y);
-            }
-            // 日期
+            // 日期移到第一層右邊 (避免跟人員擠)
             context.textAlign = "right";
-            context.fillStyle = "#555"; 
-            context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
-            context.fillText(`日期：${dateText}`, w - padX, line3Y);
+            context.font = `${fontSizeS}px '微軟正黑體', Arial`;
+            context.fillStyle = "#666"; // 灰字
+            context.fillText(dateText, w - padX, row1Y);
 
-            // --- 第四行：人員(右) ---
+            // --- Row 2: 項目 (獨佔一行) ---
+            context.textAlign = "left";
+            context.font = `${fontSizeM}px '微軟正黑體', Arial`;
+            context.fillStyle = "#333"; 
+            const finalAct = act !== "" ? act : "無詳細項目"; 
+            context.fillText(`項目：${finalAct}`, padX, row2Y);
+
+            // --- Row 3: 左數量 / 右人員 ---
+            // 數量 (紅字)
+            if (qtyText !== "") {
+                context.font = `bold ${fontSizeM}px '微軟正黑體', Arial`;
+                context.fillStyle = "#D32F2F"; 
+                context.fillText(`數量：${qtyText}`, padX, row3Y);
+            }
+
+            // 人員 (藍字)
             if (person !== "") {
                 context.textAlign = "right";
-                context.font = `bold ${fontSizeSub}px '微軟正黑體', Arial`;
-                context.fillStyle = "#0056b3"; // 藍字
-                context.fillText(`麻煩 ${person} 協助，感謝`, w - padX, line4Y);
+                context.font = `bold ${fontSizeM}px '微軟正黑體', Arial`;
+                context.fillStyle = "#0056b3"; 
+                context.fillText(`麻煩 ${person} 協助`, w - padX, row3Y);
             }
 
-            // 分隔線
-            context.strokeStyle = "#ddd";
+            // 分隔線 (照片與白底之間)
+            context.strokeStyle = "#ccc";
             context.lineWidth = 2;
             context.beginPath();
             context.moveTo(0, h);
             context.lineTo(w, h);
             context.stroke();
 
-            // 5. 顯示結果
+            // 顯示與下載
             const dataURL = canvas.toDataURL('image/jpeg', 0.95);
             resultImage.src = dataURL;
             resultArea.style.display = 'block';
 
-            // 6. 生成檔名並下載
-            let filename = "";
-            if (loc !== "") filename += `${loc}_`;
-            filename += `${finalAct}`;
-            if(qtyText !== "") filename += `_${qtyText.replace(/ /g, '')}`;
+            let filename = `${loc}_${finalAct}`;
+            if(qtyText) filename += `_${qtyText.replace(/ /g, '')}`;
             filename += `_${dateText.replace(/\//g, '')}.jpg`;
-
             autoDownload(dataURL, filename);
         });
 
-        // 重置/繼續
         resetBtn.addEventListener('click', () => {
             resultArea.style.display = 'none';
             resultImage.src = "";
-            // 清空數量欄位，但「保留」地點和人員 (因為有記憶功能)
-            // palletInput.value = "";
-            // boxInput.value = "";
-            // 如果希望連數量也自動清空，請把上面兩行註解打開
         });
 
         function autoDownload(url, filename) {
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-            if (isIOS) return; // iOS 不支援自動下載，僅顯示
-
+            if (isIOS) return; 
             const link = document.createElement('a');
             link.download = filename;
             link.href = url;
@@ -561,9 +523,7 @@
             document.body.removeChild(link);
         }
 
-        // 啟動檢查
         window.onload = checkAutoLogin;
-
     </script>
 </body>
 </html>
