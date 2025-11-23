@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>出貨紀錄 (ES協助版)</title>
+    <title>出貨紀錄 (iPhone優化版)</title>
     <style>
         body { font-family: "微軟正黑體", sans-serif; text-align: center; background: #222; color: white; padding: 10px; margin: 0; }
         
@@ -12,7 +12,6 @@
         label { display: block; margin-top: 5px; font-size: 13px; color: #ccc; }
         select, input { width: 100%; padding: 8px; font-size: 15px; margin-bottom: 5px; border: 1px solid #555; border-radius: 4px; box-sizing: border-box; background: #fff; }
         
-        /* 讓選項文字大一點比較好點 */
         option { padding: 10px; }
 
         /* 相機 */
@@ -25,7 +24,19 @@
         /* 結果區 */
         #result-area { margin-top: 15px; display: none; padding-bottom: 60px;}
         #result-image { width: 100%; max-width: 600px; border: 1px solid #555; }
-        .info-text { color: #888; font-size: 12px; margin-bottom: 5px; }
+        
+        /* 特別設計給 iPhone 的提示框 */
+        .ios-alert {
+            background-color: #ffc107; /* 黃色底 */
+            color: #000; /* 黑字 */
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 15px;
+            line-height: 1.5;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -51,7 +62,6 @@
             </div>
         </div>
 
-        <!-- 修改處：改為選單，並增加提示 -->
         <label>🙋‍♂️ 協助人員 (若無則選無，照片不顯示)</label>
         <select id="person-select">
             <option value="">無 (照片不顯示)</option>
@@ -69,7 +79,12 @@
     <canvas id="canvas" style="display:none;"></canvas>
 
     <div id="result-area">
-        <p class="info-text">✅ 已生成 (若無自動下載，請長按圖片儲存)</p>
+        <!-- iPhone 提示區塊 -->
+        <div class="ios-alert">
+            ⚠️ <strong>iPhone 用戶請注意：</strong><br>
+            請「長按下方圖片」並選擇「加入照片」以儲存至相簿。
+        </div>
+        
         <img id="result-image" src="" alt="Generated Photo">
     </div>
 
@@ -82,7 +97,7 @@
         
         const locationSelect = document.getElementById('location-select');
         const actionSelect = document.getElementById('action-select');
-        const personSelect = document.getElementById('person-select'); // 改用 Select
+        const personSelect = document.getElementById('person-select');
 
         // 1. 啟動相機
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
@@ -99,7 +114,7 @@
             
             const w = video.videoWidth;
             const h = video.videoHeight;
-            // 白底高度維持 12% (小字精簡版)
+            // 白底高度 12%
             const footerHeight = h * 0.12; 
             
             canvas.width = w;
@@ -115,7 +130,7 @@
             // 準備資料
             const loc = locationSelect.value;
             const act = actionSelect.value;
-            const person = personSelect.value; // 取得選單的值
+            const person = personSelect.value; 
             const dateText = new Date().toLocaleDateString('zh-TW');
 
             // 計算字體大小
@@ -130,7 +145,7 @@
             context.textAlign = "left";
             context.fillStyle = "#000000";
 
-            // 左側內容：地點 + 項目
+            // 左側內容
             context.font = `bold ${fontSizeMain}px '微軟正黑體', Arial`;
             context.fillText(`地點：${loc}`, padX, line1Y);
             
@@ -141,16 +156,15 @@
             context.textAlign = "right";
             const rightX = w - padX;
 
-            // --- 修改處：判斷是否有人員 ---
+            // --- 判斷人員 ---
             if (person !== "") {
-                // 如果有選人，顯示整句客氣話
                 context.font = `bold ${fontSizeSub}px '微軟正黑體', Arial`;
                 context.fillStyle = "#0056b3"; // 藍色
-                // 組合字串：麻煩 [人員] 協助，感謝
+                // 顯示客氣話
                 context.fillText(`麻煩 ${person} 協助，感謝`, rightX, line1Y);
             }
 
-            // 日期 (永遠顯示)
+            // 日期
             context.fillStyle = "#555";
             context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
             context.fillText(`日期：${dateText}`, rightX, line2Y);
@@ -169,7 +183,7 @@
             resultArea.style.display = 'block';
             resultArea.scrollIntoView({behavior: "smooth"});
 
-            // 自動下載檔名
+            // Android 自動下載嘗試 (iPhone 還是需要手動長按)
             let filename = `${loc}_${act}`;
             if(person !== "") filename += `_${person}`;
             filename += `_${dateText.replace(/\//g, '')}.jpg`;
@@ -178,6 +192,10 @@
         });
 
         function autoDownload(url, filename) {
+            // 偵測是否為 iPhone/iPad，如果是，就不執行自動下載，避免跳出干擾視窗
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (isIOS) return; 
+
             const link = document.createElement('a');
             link.download = filename;
             link.href = url;
