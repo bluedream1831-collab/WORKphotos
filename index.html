@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>物流作業紀錄 (人員更新版)</title>
+    <title>物流作業紀錄 (備註更新版)</title>
     <style>
         /* 基礎設定 */
         body { 
@@ -195,26 +195,27 @@
             <span class="label-text">📦 項目 (可選/可自打)</span>
             <input list="action-list" id="action-input" placeholder="請點選或輸入">
             <datalist id="action-list">
+                <option value="庫存調撥">
                 <option value="出貨紀錄">
                 <option value="門市寄庫">
                 <option value="進貨驗收">
-                <option value="庫存調撥">
                 <option value="退貨處理">
                 <option value="品溫異常">
                 <option value="異常回報">
-                <option value="其他備註">
+                <!-- 修改處：名稱已更新 -->
+                <option value="備註：">
             </datalist>
         </div>
 
-        <!-- 左下：交接人員 (已新增選項) -->
+        <!-- 左下：交接人員 -->
         <div class="grid-item">
             <span class="label-text">🙋‍♂️ 交接其他人員後續作業</span>
             <select id="person-select">
                 <option value="">無 (不顯示)</option>
                 <option value="早班ES人員">早班ES人員</option>
                 <option value="晚班ES人員">晚班ES人員</option>
-                <option value="庫務人員">庫務人員</option> <!-- New -->
-                <option value="幹部人員">幹部人員</option> <!-- New -->
+                <option value="庫務人員">庫務人員</option>
+                <option value="幹部人員">幹部人員</option>
             </select>
         </div>
 
