@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>物流作業紀錄 (高畫質大螢幕版)</title>
+    <title>物流作業紀錄 (標準比例版)</title>
     <style>
         /* 1. 基礎設定 */
         body { 
@@ -77,10 +77,10 @@
             margin: 0 auto;
         }
 
-        /* 2. 相機區塊 (加大到 55vh，讓預覽更大) */
+        /* 2. 相機區塊 */
         #camera-wrapper {
             width: 100%;
-            height: 55vh; /* 加大這裡 */
+            height: 55vh; /* 維持大畫面預覽 */
             max-height: 600px;
             background: #000;
             overflow: hidden;
@@ -97,7 +97,7 @@
         video {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover; /* 預覽時填滿 */
         }
 
         /* 3. 控制區塊 */
@@ -399,22 +399,20 @@
         locationSelect.addEventListener('change', () => localStorage.setItem(STORAGE_LOC_KEY, locationSelect.value));
         personSelect.addEventListener('change', () => localStorage.setItem(STORAGE_PERSON_KEY, personSelect.value));
 
-        // --- 相機 (優化版) ---
+        // --- 相機 (高畫質) ---
         function startCamera() {
-            // 設定更嚴格的參數以取得高畫質與連續對焦
             const constraints = {
                 video: {
-                    facingMode: "environment", // 後鏡頭
-                    width: { ideal: 4096 },    // 請求最高解析度
-                    height: { ideal: 2160 },   // 請求最高解析度
-                    advanced: [{ focusMode: "continuous" }] // 嘗試請求連續對焦 (Android有效)
+                    facingMode: "environment",
+                    width: { ideal: 4096 }, // 請求最大
+                    height: { ideal: 2160 },
+                    advanced: [{ focusMode: "continuous" }] 
                 }
             };
 
             navigator.mediaDevices.getUserMedia(constraints)
                 .then(stream => {
                     video.srcObject = stream;
-                    // 對部分 Android 瀏覽器嘗試手動套用軌道設定
                     const track = stream.getVideoTracks()[0];
                     if(track.getCapabilities && track.getCapabilities().focusMode) {
                         track.applyConstraints({ advanced: [{ focusMode: "continuous" }] })
@@ -423,7 +421,7 @@
                 })
                 .catch(err => {
                     console.error("Camera Error:", err);
-                    // 如果高畫質失敗，嘗試降級開啟
+                    // 降級處理
                     if (err.name === 'OverconstrainedError') {
                         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
                             .then(stream => video.srcObject = stream);
@@ -433,24 +431,37 @@
                 });
         }
 
-        // --- 拍照與繪圖 ---
+        // --- 拍照、裁切與合成 (核心修正) ---
         snapBtn.addEventListener('click', () => {
             const context = canvas.getContext('2d');
+            
+            // 原始來源尺寸 (可能是 1080x1920 這種瘦長的)
             const w = video.videoWidth;
-            const h = video.videoHeight;
+            const rawH = video.videoHeight;
+
+            // === 修正重點：強制裁切成標準 4:3 比例 ===
+            // 目標照片高度 = 寬度 * 1.33 (即 4:3)
+            // 例如寬度 1080，高度就會限制在 1440，多餘的上下切掉
+            let targetH = w * (4/3); 
+            if (targetH > rawH) targetH = rawH; // 保護機制
+
+            // 計算裁切起始點 (置中裁切)
+            const sourceY = (rawH - targetH) / 2;
+
+            // 底部白邊高度 (依照裁切後的標準高度來算 30%)
+            const footerHeight = targetH * 0.30; 
             
-            // 縮減底部白邊比例 (從 0.35 改為 0.30)，讓照片佔比更大
-            const footerHeight = h * 0.30; 
-            
+            // 設定畫布總尺寸
             canvas.width = w;
-            canvas.height = h + footerHeight;
+            canvas.height = targetH + footerHeight;
 
             // 1. 畫白底
             context.fillStyle = "#FFFFFF";
             context.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 2. 畫照片
-            context.drawImage(video, 0, 0, w, h);
+            // 2. 畫照片 (帶裁切參數)
+            // drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh)
+            context.drawImage(video, 0, sourceY, w, targetH, 0, 0, w, targetH);
 
             // 3. 準備文字
             const loc = locationSelect.value;
@@ -464,41 +475,40 @@
             if(pVal !== "") qtyText += `${pVal}板 `;
             if(bVal !== "") qtyText += `${bVal}箱`;
             
-            // 4. 文字設定 (字體大小)
-            const fontSizeL = Math.floor(w * 0.065); // 特大 (地點)
-            const fontSizeM = Math.floor(w * 0.05);  // 中 (項目/人員/數量)
-            const fontSizeS = Math.floor(w * 0.04);  // 小 (日期)
-            const padX = w * 0.04; // 左右邊距
+            // 4. 文字設定
+            const fontSizeL = Math.floor(w * 0.065); 
+            const fontSizeM = Math.floor(w * 0.05);  
+            const fontSizeS = Math.floor(w * 0.04);  
+            const padX = w * 0.04; 
             
-            // === 排版座標計算 (微調高度比例) ===
-            const row1Y = h + (footerHeight * 0.25); 
-            const row2Y = h + (footerHeight * 0.55); 
-            const row3Y = h + (footerHeight * 0.85); 
+            // 座標計算 (基於 targetH 開始往下畫)
+            const row1Y = targetH + (footerHeight * 0.25); 
+            const row2Y = targetH + (footerHeight * 0.55); 
+            const row3Y = targetH + (footerHeight * 0.85); 
 
-            // --- Row 1: 左地點 / 右日期 ---
+            // Row 1
             context.textAlign = "left";
             if (loc !== "") {
                 context.font = `bold ${fontSizeL}px '微軟正黑體', Arial`;
                 context.fillStyle = "#000"; 
-                // DC 自動判斷
+                // DC 判斷
                 let prefix = loc.includes("門市") ? "門市" : "DC";
                 context.fillText(`${prefix}：${loc}`, padX, row1Y);
             }
 
-            // 日期
             context.textAlign = "right";
             context.font = `${fontSizeS}px '微軟正黑體', Arial`;
             context.fillStyle = "#666"; 
             context.fillText(dateText, w - padX, row1Y);
 
-            // --- Row 2: 項目 ---
+            // Row 2
             context.textAlign = "left";
             context.font = `${fontSizeM}px '微軟正黑體', Arial`;
             context.fillStyle = "#333"; 
             const finalAct = act !== "" ? act : "無詳細項目"; 
             context.fillText(`項目：${finalAct}`, padX, row2Y);
 
-            // --- Row 3: 左數量 / 右人員 ---
+            // Row 3
             if (qtyText !== "") {
                 context.font = `bold ${fontSizeM}px '微軟正黑體', Arial`;
                 context.fillStyle = "#D32F2F"; 
@@ -516,11 +526,11 @@
             context.strokeStyle = "#ccc";
             context.lineWidth = 2;
             context.beginPath();
-            context.moveTo(0, h);
-            context.lineTo(w, h);
+            context.moveTo(0, targetH);
+            context.lineTo(w, targetH);
             context.stroke();
 
-            // 顯示與下載
+            // 輸出
             const dataURL = canvas.toDataURL('image/jpeg', 0.95);
             resultImage.src = dataURL;
             resultArea.style.display = 'block';
