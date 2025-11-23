@@ -3,30 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>出貨紀錄 (修正版)</title>
+    <title>出貨紀錄 (白底版)</title>
     <style>
-        body { font-family: "微軟正黑體", sans-serif; text-align: center; background: #222; color: white; padding: 10px; margin: 0; }
+        /* 修改處：背景改白，文字改黑 */
+        body { 
+            font-family: "微軟正黑體", sans-serif; 
+            text-align: center; 
+            background: #FFFFFF; /* 白底 */
+            color: #333333;      /* 黑字 */
+            padding: 10px; 
+            margin: 0; 
+        }
         
-        /* 操作區塊 */
-        .control-group { margin-bottom: 8px; background: #333; padding: 10px; border-radius: 8px; text-align: left; border: 1px solid #555;}
-        label { display: block; margin-top: 5px; font-size: 13px; color: #ccc; }
-        select, input { width: 100%; padding: 8px; font-size: 15px; margin-bottom: 5px; border: 1px solid #555; border-radius: 4px; box-sizing: border-box; background: #fff; }
+        /* 操作區塊：改為淺灰底，讓輸入框明顯一點 */
+        .control-group { 
+            margin-bottom: 10px; 
+            background: #f8f9fa; /* 淺灰 */
+            padding: 15px; 
+            border-radius: 8px; 
+            text-align: left; 
+            border: 1px solid #ddd; /* 淺灰邊框 */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        /* 標籤文字加深 */
+        label { 
+            display: block; 
+            margin-top: 5px; 
+            font-size: 14px; 
+            color: #333; 
+            font-weight: bold; 
+        }
+
+        /* 輸入框樣式 */
+        select, input { 
+            width: 100%; 
+            padding: 10px; 
+            font-size: 16px; 
+            margin-bottom: 8px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+            background: #fff; 
+            color: #000; 
+        }
         
         option { padding: 10px; }
 
-        /* 相機 */
-        #camera-box { position: relative; width: 100%; max-width: 600px; margin: 0 auto; background: #000; border-radius: 4px; overflow: hidden; border: 2px solid #555;}
+        /* 相機邊框改為深色 */
+        #camera-box { 
+            position: relative; 
+            width: 100%; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: #000; 
+            border-radius: 4px; 
+            overflow: hidden; 
+            border: 2px solid #333; /* 深色邊框 */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
         video { width: 100%; display: block; }
         
         /* 拍照按鈕 (綠色) */
-        #snap-btn { width: 100%; max-width: 600px; padding: 12px; font-size: 18px; margin-top: 10px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold; }
+        #snap-btn { 
+            width: 100%; 
+            max-width: 600px; 
+            padding: 12px; 
+            font-size: 18px; 
+            margin-top: 15px; 
+            cursor: pointer; 
+            background: #28a745; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            font-weight: bold; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
         
         /* 重置按鈕 (藍色) */
-        #reset-btn { width: 100%; max-width: 600px; padding: 12px; font-size: 18px; margin-bottom: 15px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; font-weight: bold; display: block; margin-left: auto; margin-right: auto;}
+        #reset-btn { 
+            width: 100%; 
+            max-width: 600px; 
+            padding: 12px; 
+            font-size: 18px; 
+            margin-bottom: 15px; 
+            cursor: pointer; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            font-weight: bold; 
+            display: block; 
+            margin-left: auto; 
+            margin-right: auto;
+        }
 
         /* 結果區 */
-        #result-area { margin-top: 15px; display: none; padding-bottom: 60px; border-top: 1px solid #444; padding-top: 20px;}
-        #result-image { width: 100%; max-width: 600px; border: 1px solid #555; margin-top: 10px; }
+        #result-area { 
+            margin-top: 20px; 
+            display: none; 
+            padding-bottom: 60px; 
+            border-top: 1px solid #eee; 
+            padding-top: 20px;
+        }
+        
+        #result-image { 
+            width: 100%; 
+            max-width: 600px; 
+            border: 1px solid #ccc; 
+            margin-top: 10px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
         
         /* iPhone 提示框 */
         .ios-alert {
@@ -36,7 +124,7 @@
             border-radius: 20px;
             margin: 0 auto 10px auto;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 13px;
             line-height: 1.4;
             text-align: center;
             max-width: 90%;
@@ -53,7 +141,6 @@
         <div style="display:flex; gap:10px;">
             <div style="flex:1;">
                 <label>📍 門市/DC</label>
-                <!-- 修改處：那瑪夏字體已修正 -->
                 <select id="location-select">
                     <!-- 門市 (置頂) -->
                     <option value="那瑪夏門市">那瑪夏門市</option>
