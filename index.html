@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>出貨紀錄 (多地點版)</title>
+    <title>出貨紀錄 (連續拍攝版)</title>
     <style>
         body { font-family: "微軟正黑體", sans-serif; text-align: center; background: #222; color: white; padding: 10px; margin: 0; }
         
@@ -18,14 +18,17 @@
         #camera-box { position: relative; width: 100%; max-width: 600px; margin: 0 auto; background: #000; border-radius: 4px; overflow: hidden; border: 2px solid #555;}
         video { width: 100%; display: block; }
         
-        /* 按鈕 */
+        /* 拍照按鈕 (綠色) */
         #snap-btn { width: 100%; max-width: 600px; padding: 12px; font-size: 18px; margin-top: 10px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold; }
         
+        /* 重置按鈕 (藍色) */
+        #reset-btn { width: 100%; max-width: 600px; padding: 12px; font-size: 18px; margin-bottom: 15px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; font-weight: bold; display: block; margin-left: auto; margin-right: auto;}
+
         /* 結果區 */
-        #result-area { margin-top: 15px; display: none; padding-bottom: 60px;}
-        #result-image { width: 100%; max-width: 600px; border: 1px solid #555; }
+        #result-area { margin-top: 15px; display: none; padding-bottom: 60px; border-top: 1px solid #444; padding-top: 20px;}
+        #result-image { width: 100%; max-width: 600px; border: 1px solid #555; margin-top: 10px; }
         
-        /* iPhone 提示框 (精簡版) */
+        /* iPhone 提示框 */
         .ios-alert {
             background-color: #ffc107;
             color: #000;
@@ -43,11 +46,13 @@
 </head>
 <body>
 
+    <!-- 頂部錨點，方便跳轉回來 -->
+    <div id="top-anchor"></div>
+
     <div class="control-group">
         <div style="display:flex; gap:10px;">
             <div style="flex:1;">
                 <label>📍 門市/DC</label>
-                <!-- 修改處：更新後的完整清單 -->
                 <select id="location-select">
                     <option value="那瑪夏">那瑪夏</option>
                     <option value="霧台">霧台</option>
@@ -89,7 +94,11 @@
 
     <canvas id="canvas" style="display:none;"></canvas>
 
+    <!-- 結果區塊 -->
     <div id="result-area">
+        <!-- 新增：繼續拍下一張按鈕 -->
+        <button id="reset-btn">🔄 繼續拍下一張 (回上方)</button>
+        
         <div class="ios-alert">
             ⚠️ iPhone 請「長按圖片」並選擇「加入照片」
         </div>
@@ -103,6 +112,7 @@
         const resultArea = document.getElementById('result-area');
         const resultImage = document.getElementById('result-image');
         const snapBtn = document.getElementById('snap-btn');
+        const resetBtn = document.getElementById('reset-btn'); // 新增
         
         const locationSelect = document.getElementById('location-select');
         const actionSelect = document.getElementById('action-select');
@@ -141,11 +151,9 @@
             const person = personSelect.value; 
             const dateText = new Date().toLocaleDateString('zh-TW');
 
-            // 計算字體大小
             const fontSizeMain = Math.floor(w * 0.035); 
             const fontSizeSub = Math.floor(w * 0.028); 
 
-            // 設定位置
             const padX = w * 0.03; 
             const line1Y = h + (footerHeight * 0.4);
             const line2Y = h + (footerHeight * 0.8);
@@ -153,25 +161,23 @@
             context.textAlign = "left";
             context.fillStyle = "#000000";
 
-            // 左側內容
+            // 左側
             context.font = `bold ${fontSizeMain}px '微軟正黑體', Arial`;
             context.fillText(`門市/DC：${loc}`, padX, line1Y);
             
             context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
             context.fillText(`項目：${act}`, padX, line2Y);
 
-            // 右側內容
+            // 右側
             context.textAlign = "right";
             const rightX = w - padX;
 
-            // --- 判斷人員 ---
             if (person !== "") {
                 context.font = `bold ${fontSizeSub}px '微軟正黑體', Arial`;
-                context.fillStyle = "#0056b3"; // 藍色
+                context.fillStyle = "#0056b3"; 
                 context.fillText(`麻煩 ${person} 協助，感謝`, rightX, line1Y);
             }
 
-            // 日期
             context.fillStyle = "#555";
             context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
             context.fillText(`日期：${dateText}`, rightX, line2Y);
@@ -188,6 +194,8 @@
             const dataURL = canvas.toDataURL('image/jpeg', 0.95);
             resultImage.src = dataURL;
             resultArea.style.display = 'block';
+            
+            // 滑動到結果區
             resultArea.scrollIntoView({behavior: "smooth"});
 
             // Android 自動下載
@@ -196,6 +204,16 @@
             filename += `_${dateText.replace(/\//g, '')}.jpg`;
 
             autoDownload(dataURL, filename);
+        });
+
+        // 3. 繼續拍下一張邏輯 (新增)
+        resetBtn.addEventListener('click', () => {
+            // 隱藏結果區
+            resultArea.style.display = 'none';
+            // 清空圖片釋放記憶體
+            resultImage.src = "";
+            // 滾動回最上方
+            window.scrollTo({top: 0, behavior: 'smooth'});
         });
 
         function autoDownload(url, filename) {
