@@ -3,19 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>出貨紀錄 (自動隱藏版)</title>
+    <title>出貨紀錄 (ES協助版)</title>
     <style>
         body { font-family: "微軟正黑體", sans-serif; text-align: center; background: #222; color: white; padding: 10px; margin: 0; }
         
+        /* 操作區塊 */
         .control-group { margin-bottom: 8px; background: #333; padding: 10px; border-radius: 8px; text-align: left; border: 1px solid #555;}
         label { display: block; margin-top: 5px; font-size: 13px; color: #ccc; }
         select, input { width: 100%; padding: 8px; font-size: 15px; margin-bottom: 5px; border: 1px solid #555; border-radius: 4px; box-sizing: border-box; background: #fff; }
         
+        /* 讓選項文字大一點比較好點 */
+        option { padding: 10px; }
+
+        /* 相機 */
         #camera-box { position: relative; width: 100%; max-width: 600px; margin: 0 auto; background: #000; border-radius: 4px; overflow: hidden; border: 2px solid #555;}
         video { width: 100%; display: block; }
         
+        /* 按鈕 */
         #snap-btn { width: 100%; max-width: 600px; padding: 12px; font-size: 18px; margin-top: 10px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold; }
         
+        /* 結果區 */
         #result-area { margin-top: 15px; display: none; padding-bottom: 60px;}
         #result-image { width: 100%; max-width: 600px; border: 1px solid #555; }
         .info-text { color: #888; font-size: 12px; margin-bottom: 5px; }
@@ -44,8 +51,13 @@
             </div>
         </div>
 
-        <label>🙋‍♂️ 協助人員 (沒填則不顯示)</label>
-        <input type="text" id="person-input" placeholder="若無人協助請留空">
+        <!-- 修改處：改為選單，並增加提示 -->
+        <label>🙋‍♂️ 協助人員 (若無則選無，照片不顯示)</label>
+        <select id="person-select">
+            <option value="">無 (照片不顯示)</option>
+            <option value="早班ES人員">早班ES人員</option>
+            <option value="晚班ES人員">晚班ES人員</option>
+        </select>
     </div>
 
     <div id="camera-box">
@@ -70,7 +82,7 @@
         
         const locationSelect = document.getElementById('location-select');
         const actionSelect = document.getElementById('action-select');
-        const personInput = document.getElementById('person-input');
+        const personSelect = document.getElementById('person-select'); // 改用 Select
 
         // 1. 啟動相機
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
@@ -87,7 +99,8 @@
             
             const w = video.videoWidth;
             const h = video.videoHeight;
-            const footerHeight = h * 0.12; // 白底高度 12%
+            // 白底高度維持 12% (小字精簡版)
+            const footerHeight = h * 0.12; 
             
             canvas.width = w;
             canvas.height = h + footerHeight;
@@ -102,7 +115,7 @@
             // 準備資料
             const loc = locationSelect.value;
             const act = actionSelect.value;
-            const personRaw = personInput.value.trim(); // 取得輸入的文字並去除前後空白
+            const person = personSelect.value; // 取得選單的值
             const dateText = new Date().toLocaleDateString('zh-TW');
 
             // 計算字體大小
@@ -117,7 +130,7 @@
             context.textAlign = "left";
             context.fillStyle = "#000000";
 
-            // 左側內容
+            // 左側內容：地點 + 項目
             context.font = `bold ${fontSizeMain}px '微軟正黑體', Arial`;
             context.fillText(`地點：${loc}`, padX, line1Y);
             
@@ -128,14 +141,16 @@
             context.textAlign = "right";
             const rightX = w - padX;
 
-            // --- 關鍵修改：只有當 personRaw 不為空時，才把字寫上去 ---
-            if (personRaw !== "") {
+            // --- 修改處：判斷是否有人員 ---
+            if (person !== "") {
+                // 如果有選人，顯示整句客氣話
                 context.font = `bold ${fontSizeSub}px '微軟正黑體', Arial`;
                 context.fillStyle = "#0056b3"; // 藍色
-                context.fillText(`協助：${personRaw}`, rightX, line1Y);
+                // 組合字串：麻煩 [人員] 協助，感謝
+                context.fillText(`麻煩 ${person} 協助，感謝`, rightX, line1Y);
             }
 
-            // 日期 (永遠顯示在第二行右邊)
+            // 日期 (永遠顯示)
             context.fillStyle = "#555";
             context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
             context.fillText(`日期：${dateText}`, rightX, line2Y);
@@ -154,9 +169,9 @@
             resultArea.style.display = 'block';
             resultArea.scrollIntoView({behavior: "smooth"});
 
-            // 自動下載檔名 (若有人名加在檔名裡，沒人名就不加)
+            // 自動下載檔名
             let filename = `${loc}_${act}`;
-            if(personRaw !== "") filename += `_${personRaw}`;
+            if(person !== "") filename += `_${person}`;
             filename += `_${dateText.replace(/\//g, '')}.jpg`;
 
             autoDownload(dataURL, filename);
