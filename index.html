@@ -2,23 +2,44 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- PWA 核心設定：禁止縮放、適配劉海屏 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- iOS PWA 設定：讓網頁變身 App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="拍照作業">
+    
+    <!-- Android PWA 設定 -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#222222">
+
     <title>拍照作業</title>
+    
+    <!-- 設定 App 圖示 (通用連結) -->
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2983/2983067.png">
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2983/2983067.png">
+
     <style>
-        /* 1. 基礎設定 */
+        /* 1. 基礎設定 - App 質感 */
         body { 
-            font-family: "微軟正黑體", sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "微軟正黑體", sans-serif; 
             background: #f4f4f4; 
             color: #333; 
             margin: 0; 
             padding: 10px; 
-            padding-bottom: 90px; 
+            /* 避開 iPhone 劉海與底部橫條 */
+            padding-top: calc(10px + env(safe-area-inset-top)); 
+            padding-bottom: 100px; 
             min-height: 100vh; 
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
             overflow-y: auto; 
             -webkit-overflow-scrolling: touch; 
+            /* 禁止選取文字，讓它更像原生 App */
+            user-select: none; 
+            -webkit-user-select: none;
         }
 
         /* --- 登入畫面樣式 --- */
@@ -32,38 +53,42 @@
             align-items: center;
             justify-content: center;
             color: white;
+            padding-bottom: 10%;
         }
         #login-box {
             background: #333;
-            padding: 20px;
-            border-radius: 10px;
+            padding: 25px;
+            border-radius: 16px;
             text-align: center;
             width: 80%;
-            max-width: 300px;
-            border: 1px solid #555;
+            max-width: 320px;
+            border: 1px solid #444;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         #pass-input {
             width: 100%;
-            padding: 10px;
-            margin: 15px 0;
-            font-size: 18px;
+            padding: 12px;
+            margin: 20px 0;
+            font-size: 18px; /* 避免 iOS 輸入時放大 */
             text-align: center;
-            border-radius: 5px;
+            border-radius: 8px;
             border: none;
+            outline: none;
         }
         #login-btn {
             background: #007bff;
             color: white;
-            padding: 10px 20px;
+            padding: 12px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
             width: 100%;
+            font-weight: bold;
         }
         #login-msg {
             color: #ff4d4d;
-            margin-top: 10px;
+            margin-top: 15px;
             font-size: 14px;
             display: none;
         }
@@ -84,8 +109,8 @@
             max-height: 600px;
             background: #000;
             overflow: hidden;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            border-radius: 16px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -104,37 +129,45 @@
         .controls-grid {
             display: grid;
             grid-template-columns: 1fr 1fr; 
-            gap: 10px; 
+            gap: 12px; 
             background: #FFFFFF;
             padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-radius: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
 
         .grid-item span.label-text {
             display: block;
             font-size: 13px; 
             color: #666;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
             font-weight: bold;
         }
 
-        /* 通用輸入框樣式 */
+        /* 輸入框優化 */
         select, input {
             width: 100%;
-            padding: 8px; 
-            font-size: 16px;   
-            border: 1px solid #ccc;
-            border-radius: 6px;
+            padding: 10px;
+            font-size: 16px; /* 關鍵：防止 iOS 自動縮放 */
+            border: 1px solid #ddd;
+            border-radius: 8px;
             background: #fff; 
             color: #333;
             box-sizing: border-box;
-            height: 42px; 
+            height: 48px; /* 加高好按 */
+            -webkit-appearance: none; /* 移除原生醜樣式 */
+        }
+        
+        select {
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px top 50%;
+            background-size: 12px auto;
         }
 
-        /* 作業輸入框區塊 (包含切換邏輯) */
+        /* 作業切換區 */
         #action-manual-group {
-            display: none; /* 預設隱藏 */
+            display: none; 
             gap: 5px;
         }
         #action-input-manual {
@@ -147,7 +180,7 @@
             background: #6c757d;
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 14px;
             cursor: pointer;
             padding: 0;
@@ -156,26 +189,23 @@
             justify-content: center;
         }
 
-        /* 數量輸入框容器 */
+        /* 數量輸入 */
         .input-group {
             display: flex;
             gap: 8px;
         }
-        
         .unit-input-wrapper {
             position: relative;
             flex: 1;
         }
-
         .unit-input-wrapper input {
             text-align: center; 
             padding: 5px 25px 5px 5px;
             font-weight: bold;
         }
-
         .unit-input-wrapper .unit {
             position: absolute;
-            right: 8px;
+            right: 10px;
             top: 50%;
             transform: translateY(-50%);
             color: #888;
@@ -183,14 +213,14 @@
             pointer-events: none;
         }
 
-        /* 4. 拍照按鈕 */
+        /* 4. 拍照按鈕 (懸浮底部) */
         #snap-btn {
             position: fixed;
-            bottom: 20px;
+            bottom: 30px;
             left: 5%;
             width: 90%; 
             max-width: 580px; 
-            padding: 15px;
+            padding: 16px;
             font-size: 18px;
             cursor: pointer;
             background: linear-gradient(135deg, #28a745, #218838); 
@@ -198,15 +228,15 @@
             border: none;
             border-radius: 50px; 
             font-weight: bold;
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
             z-index: 999;
             letter-spacing: 1px;
             left: 50%;
             transform: translateX(-50%);
+            transition: transform 0.1s;
         }
-        
         #snap-btn:active {
-            transform: translateX(-50%) scale(0.98);
+            transform: translateX(-50%) scale(0.95);
         }
 
         /* 5. 結果顯示區 */
@@ -219,6 +249,7 @@
             overflow-y: auto; 
             padding: 20px;
             text-align: center;
+            padding-top: calc(40px + env(safe-area-inset-top));
         }
 
         #result-image {
@@ -244,22 +275,22 @@
         .ios-alert {
             background: #fff3cd;
             color: #856404;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border-radius: 20px;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: bold;
             display: inline-block;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             border: 1px solid #ffeeba;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
     </style>
 </head>
 <body>
 
-    <!-- 0. 登入鎖定畫面 -->
+    <!-- 0. 登入畫面 -->
     <div id="login-screen">
         <div id="login-box">
-            <!-- 這裡修改：改為 拍照作業 -->
             <h3>🔒 拍照作業</h3>
             <p style="font-size:12px; color:#ccc;">請輸入員工通行碼</p>
             <input type="password" id="pass-input" placeholder="密碼" pattern="[0-9]*" inputmode="numeric">
@@ -271,12 +302,12 @@
     <!-- 主程式區塊 -->
     <div id="app-content">
 
-        <!-- 1. 相機區 -->
+        <!-- 相機 -->
         <div id="camera-wrapper">
             <video id="video" autoplay playsinline></video>
         </div>
 
-        <!-- 2. 控制區 -->
+        <!-- 控制面板 -->
         <div class="controls-grid">
             <div class="grid-item">
                 <span class="label-text">📍 門市/DC (自動記憶)</span>
@@ -299,11 +330,11 @@
                 </select>
             </div>
 
-            <!-- 作業選擇區 -->
+            <!-- 作業選擇 (下拉+手動) -->
             <div class="grid-item">
                 <span class="label-text">📦 作業 (選錯可重選)</span>
                 
-                <!-- 模式1: 下拉選單 (預設) -->
+                <!-- 模式1: 下拉選單 -->
                 <select id="action-select">
                     <option value="" selected>請選擇作業...</option>
                     <option value="庫存調撥">庫存調撥</option>
@@ -319,10 +350,10 @@
                     <option value="CUSTOM_INPUT" style="color:#007bff; font-weight:bold;">✏️ 自行輸入...</option>
                 </select>
 
-                <!-- 模式2: 手動輸入 (隱藏) -->
+                <!-- 模式2: 手動輸入 -->
                 <div id="action-manual-group">
                     <input type="text" id="action-input-manual" placeholder="請輸入作業名稱">
-                    <button id="action-reset-btn" type="button">↩ 重選</button>
+                    <button id="action-reset-btn" type="button">↩</button>
                 </div>
             </div>
 
@@ -341,11 +372,11 @@
                 <span class="label-text">📝 數量 (填數字)</span>
                 <div class="input-group">
                     <div class="unit-input-wrapper">
-                        <input type="number" id="pallet-input" placeholder="">
+                        <input type="number" id="pallet-input" placeholder="" pattern="[0-9]*" inputmode="numeric">
                         <span class="unit">板</span>
                     </div>
                     <div class="unit-input-wrapper">
-                        <input type="number" id="box-input" placeholder="">
+                        <input type="number" id="box-input" placeholder="" pattern="[0-9]*" inputmode="numeric">
                         <span class="unit">箱</span>
                     </div>
                 </div>
@@ -354,10 +385,13 @@
 
         <button id="snap-btn">📸 拍照存檔</button>
 
+        <!-- 隱藏畫布 -->
         <canvas id="canvas" style="display:none;"></canvas>
 
+        <!-- 結果頁 -->
         <div id="result-area">
-            <div style="max-width: 600px; margin: 0 auto; padding-top: 30px;">
+            <div style="max-width: 600px; margin: 0 auto;">
+                <br>
                 <div class="ios-alert">⚠️ iPhone 請「長按圖片」加入照片</div>
                 <br>
                 <img id="result-image" src="" alt="Generated Photo">
@@ -393,7 +427,6 @@
         const palletInput = document.getElementById('pallet-input');
         const boxInput = document.getElementById('box-input');
 
-        // 作業相關元素
         const actionSelect = document.getElementById('action-select');
         const actionManualGroup = document.getElementById('action-manual-group');
         const actionInputManual = document.getElementById('action-input-manual');
@@ -436,7 +469,7 @@
         locationSelect.addEventListener('change', () => localStorage.setItem(STORAGE_LOC_KEY, locationSelect.value));
         personSelect.addEventListener('change', () => localStorage.setItem(STORAGE_PERSON_KEY, personSelect.value));
 
-        // --- 作業選擇切換邏輯 ---
+        // --- 作業切換 ---
         actionSelect.addEventListener('change', function() {
             if (this.value === 'CUSTOM_INPUT') {
                 this.style.display = 'none';
@@ -478,12 +511,12 @@
                         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
                             .then(stream => video.srcObject = stream);
                     } else {
-                        alert("相機開啟失敗，請確認 HTTPS 權限");
+                        alert("相機開啟失敗，請確認網址為 HTTPS");
                     }
                 });
         }
 
-        // --- 拍照、裁切與合成 ---
+        // --- 拍照、裁切與合成 (核心邏輯) ---
         snapBtn.addEventListener('click', () => {
             const context = canvas.getContext('2d');
             
@@ -509,14 +542,11 @@
             context.drawImage(video, 0, sourceY, w, targetH, 0, 0, w, targetH);
 
             // 3. 準備文字
-            // 判斷作業文字來源
             let act = "";
             if (actionSelect.style.display !== 'none') {
-                // 選單模式
                 act = actionSelect.value;
                 if(act === 'CUSTOM_INPUT') act = ""; 
             } else {
-                // 手動模式
                 act = actionInputManual.value;
             }
 
@@ -530,18 +560,17 @@
             if(pVal !== "") qtyText += `${pVal}板 `;
             if(bVal !== "") qtyText += `${bVal}箱`;
             
-            // 4. 文字設定
+            // 4. 字體與排版設定
             const fontSizeL = Math.floor(w * 0.065); 
             const fontSizeM = Math.floor(w * 0.05);  
             const fontSizeS = Math.floor(w * 0.04);  
             const padX = w * 0.04; 
             
-            // 座標計算
             const row1Y = targetH + (footerHeight * 0.25); 
             const row2Y = targetH + (footerHeight * 0.55); 
             const row3Y = targetH + (footerHeight * 0.85); 
 
-            // Row 1 (地點 & 日期)
+            // Row 1: 地點 & 日期
             context.textAlign = "left";
             if (loc !== "") {
                 context.font = `bold ${fontSizeL}px '微軟正黑體', Arial`;
@@ -555,7 +584,7 @@
             context.fillStyle = "#666"; 
             context.fillText(dateText, w - padX, row1Y);
 
-            // Row 2 (作業)
+            // Row 2: 作業 (若無則不畫)
             if (act !== "") {
                 context.textAlign = "left";
                 context.font = `${fontSizeM}px '微軟正黑體', Arial`;
@@ -563,7 +592,7 @@
                 context.fillText(`作業：${act}`, padX, row2Y);
             }
 
-            // Row 3 (數量 & 人員)
+            // Row 3: 數量 & 人員
             context.textAlign = "left"; 
             if (qtyText !== "") {
                 context.font = `bold ${fontSizeM}px '微軟正黑體', Arial`;
@@ -591,7 +620,7 @@
             resultImage.src = dataURL;
             resultArea.style.display = 'block';
 
-            // 檔名
+            // 檔名生成
             let filename = loc !== "" ? loc : "Snapshot";
             if (act !== "") filename += `_${act}`;
             if (qtyText !== "") filename += `_${qtyText.replace(/ /g, '')}`;
