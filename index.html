@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>出貨紀錄 (iPhone優化版)</title>
+    <title>出貨紀錄 (多地點版)</title>
     <style>
         body { font-family: "微軟正黑體", sans-serif; text-align: center; background: #222; color: white; padding: 10px; margin: 0; }
         
@@ -25,17 +25,19 @@
         #result-area { margin-top: 15px; display: none; padding-bottom: 60px;}
         #result-image { width: 100%; max-width: 600px; border: 1px solid #555; }
         
-        /* 特別設計給 iPhone 的提示框 */
+        /* iPhone 提示框 (精簡版) */
         .ios-alert {
-            background-color: #ffc107; /* 黃色底 */
-            color: #000; /* 黑字 */
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
+            background-color: #ffc107;
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 20px;
+            margin: 0 auto 10px auto;
             font-weight: bold;
-            font-size: 15px;
-            line-height: 1.5;
-            text-align: left;
+            font-size: 12px;
+            line-height: 1.4;
+            text-align: center;
+            max-width: 90%;
+            display: inline-block;
         }
     </style>
 </head>
@@ -44,11 +46,20 @@
     <div class="control-group">
         <div style="display:flex; gap:10px;">
             <div style="flex:1;">
-                <label>📍 地點</label>
+                <label>📍 門市/DC</label>
+                <!-- 修改處：更新後的完整清單 -->
                 <select id="location-select">
-                    <option value="那馬夏">那馬夏</option>
+                    <option value="那瑪夏">那瑪夏</option>
                     <option value="霧台">霧台</option>
                     <option value="新市">新市</option>
+                    <option value="新市物流園區">新市物流園區</option>
+                    <option value="嘉義">嘉義</option>
+                    <option value="台中">台中</option>
+                    <option value="大肚">大肚</option>
+                    <option value="湖口">湖口</option>
+                    <option value="電研">電研</option>
+                    <option value="暖暖">暖暖</option>
+                    <option value="花蓮">花蓮</option>
                 </select>
             </div>
             <div style="flex:1;">
@@ -79,12 +90,10 @@
     <canvas id="canvas" style="display:none;"></canvas>
 
     <div id="result-area">
-        <!-- iPhone 提示區塊 -->
         <div class="ios-alert">
-            ⚠️ <strong>iPhone 用戶請注意：</strong><br>
-            請「長按下方圖片」並選擇「加入照片」以儲存至相簿。
+            ⚠️ iPhone 請「長按圖片」並選擇「加入照片」
         </div>
-        
+        <br>
         <img id="result-image" src="" alt="Generated Photo">
     </div>
 
@@ -114,7 +123,6 @@
             
             const w = video.videoWidth;
             const h = video.videoHeight;
-            // 白底高度 12%
             const footerHeight = h * 0.12; 
             
             canvas.width = w;
@@ -147,7 +155,7 @@
 
             // 左側內容
             context.font = `bold ${fontSizeMain}px '微軟正黑體', Arial`;
-            context.fillText(`地點：${loc}`, padX, line1Y);
+            context.fillText(`門市/DC：${loc}`, padX, line1Y);
             
             context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
             context.fillText(`項目：${act}`, padX, line2Y);
@@ -160,7 +168,6 @@
             if (person !== "") {
                 context.font = `bold ${fontSizeSub}px '微軟正黑體', Arial`;
                 context.fillStyle = "#0056b3"; // 藍色
-                // 顯示客氣話
                 context.fillText(`麻煩 ${person} 協助，感謝`, rightX, line1Y);
             }
 
@@ -183,7 +190,7 @@
             resultArea.style.display = 'block';
             resultArea.scrollIntoView({behavior: "smooth"});
 
-            // Android 自動下載嘗試 (iPhone 還是需要手動長按)
+            // Android 自動下載
             let filename = `${loc}_${act}`;
             if(person !== "") filename += `_${person}`;
             filename += `_${dateText.replace(/\//g, '')}.jpg`;
@@ -192,7 +199,6 @@
         });
 
         function autoDownload(url, filename) {
-            // 偵測是否為 iPhone/iPad，如果是，就不執行自動下載，避免跳出干擾視窗
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             if (isIOS) return; 
 
