@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>物流作業紀錄 (防重疊版)</title>
+    <title>物流作業紀錄 (排版調整版)</title>
     <style>
         /* 1. 基礎設定 */
         body { 
@@ -337,7 +337,7 @@
     <script>
         // --- 0. 密碼與自動登入設定 ---
         const ACCESS_PASSWORD = "8888"; 
-        const LOGIN_KEY = "LOGISTICS_LOGIN_DATE"; // 儲存日期的 Key
+        const LOGIN_KEY = "LOGISTICS_LOGIN_DATE"; 
 
         const loginScreen = document.getElementById('login-screen');
         const appContent = document.getElementById('app-content');
@@ -349,9 +349,9 @@
             const today = new Date().toDateString();
             const lastLoginDate = localStorage.getItem(LOGIN_KEY);
             if (lastLoginDate === today) {
-                enterApp(); // 今天登入過，直接進
+                enterApp(); 
             } else {
-                loginScreen.style.display = "flex"; // 沒登入過，顯示密碼頁
+                loginScreen.style.display = "flex"; 
             }
         }
 
@@ -412,8 +412,8 @@
             const w = video.videoWidth;
             const h = video.videoHeight;
             
-            // 修改處：白底高度增加到 28% 以容納四行字
-            const footerHeight = h * 0.28; 
+            // 白底高度維持 30% 左右，保證空間充足
+            const footerHeight = h * 0.30; 
             
             canvas.width = w;
             canvas.height = h + footerHeight;
@@ -437,56 +437,53 @@
             if(pVal !== "") qtyText += `${pVal}板 `;
             if(bVal !== "") qtyText += `${bVal}箱`;
             
-            // 字體設定 (維持大字)
+            // 字體設定 (大字)
             const fontSizeMain = Math.floor(w * 0.06); 
             const fontSizeSub = Math.floor(w * 0.045); 
             const padX = w * 0.03; 
             
-            // === 關鍵修改：四行排版，絕對不重疊 ===
-            // 第 1 行
-            const line1Y = h + (footerHeight * 0.20);
-            // 第 2 行
-            const line2Y = h + (footerHeight * 0.45);
-            // 第 3 行
-            const line3Y = h + (footerHeight * 0.70);
-            // 第 4 行
-            const line4Y = h + (footerHeight * 0.93);
+            // === 排版邏輯 (四行) ===
+            // 修改：確保人員在日期的下方
+            const line1Y = h + (footerHeight * 0.20); // 門市
+            const line2Y = h + (footerHeight * 0.45); // 項目
+            const line3Y = h + (footerHeight * 0.70); // 數量(左) / 日期(右)
+            const line4Y = h + (footerHeight * 0.92); // 人員(右) - 改到最下面
 
             context.textAlign = "left";
             context.fillStyle = "#000000"; 
 
-            // 行 1：地點 (左)
+            // 1. 門市 (左)
             if (loc !== "") {
                 context.font = `bold ${fontSizeMain}px '微軟正黑體', Arial`;
                 context.fillText(`門市/DC：${loc}`, padX, line1Y);
             }
             
-            // 行 2：項目 (左)
+            // 2. 項目 (左)
             context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
             const finalAct = act !== "" ? act : "無紀錄"; 
             context.fillText(`項目：${finalAct}`, padX, line2Y);
 
-            // 行 3：交接人員 (右) - 獨立一行，避免撞到左邊
-            if (person !== "") {
-                context.textAlign = "right";
-                context.font = `bold ${fontSizeSub}px '微軟正黑體', Arial`;
-                context.fillStyle = "#0056b3"; 
-                context.fillText(`麻煩 ${person} 協助，感謝`, w - padX, line3Y);
-            }
-
-            // 行 4：數量 (左) & 日期 (右)
+            // 3. 數量 (左) & 日期 (右)
             // 數量
             if (qtyText !== "") {
                 context.textAlign = "left"; 
-                context.fillStyle = "#D32F2F"; 
+                context.fillStyle = "#D32F2F"; // 紅字
                 context.font = `bold ${fontSizeSub}px '微軟正黑體', Arial`;
-                context.fillText(`數量：${qtyText}`, padX, line4Y);
+                context.fillText(`數量：${qtyText}`, padX, line3Y);
             }
-            // 日期
+            // 日期 (移到第3行右邊)
             context.textAlign = "right";
-            context.fillStyle = "#555";
+            context.fillStyle = "#555"; // 灰字
             context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
-            context.fillText(`日期：${dateText}`, w - padX, line4Y);
+            context.fillText(`日期：${dateText}`, w - padX, line3Y);
+
+            // 4. 交接人員 (右 - 移到最下面)
+            if (person !== "") {
+                context.textAlign = "right";
+                context.font = `bold ${fontSizeSub}px '微軟正黑體', Arial`;
+                context.fillStyle = "#0056b3"; // 藍字
+                context.fillText(`麻煩 ${person} 協助，感謝`, w - padX, line4Y);
+            }
 
             // 分隔線
             context.strokeStyle = "#ddd";
