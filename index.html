@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>物流作業紀錄 (排版美化版)</title>
+    <title>物流作業紀錄 (高畫質大螢幕版)</title>
     <style>
         /* 1. 基礎設定 */
         body { 
@@ -77,11 +77,11 @@
             margin: 0 auto;
         }
 
-        /* 2. 相機區塊 */
+        /* 2. 相機區塊 (加大到 55vh，讓預覽更大) */
         #camera-wrapper {
             width: 100%;
-            height: 45vh; 
-            max-height: 400px;
+            height: 55vh; /* 加大這裡 */
+            max-height: 600px;
             background: #000;
             overflow: hidden;
             border-radius: 12px;
@@ -399,21 +399,48 @@
         locationSelect.addEventListener('change', () => localStorage.setItem(STORAGE_LOC_KEY, locationSelect.value));
         personSelect.addEventListener('change', () => localStorage.setItem(STORAGE_PERSON_KEY, personSelect.value));
 
-        // --- 相機 ---
+        // --- 相機 (優化版) ---
         function startCamera() {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then(stream => video.srcObject = stream)
-                .catch(err => alert("相機開啟失敗，請確認 HTTPS 權限"));
+            // 設定更嚴格的參數以取得高畫質與連續對焦
+            const constraints = {
+                video: {
+                    facingMode: "environment", // 後鏡頭
+                    width: { ideal: 4096 },    // 請求最高解析度
+                    height: { ideal: 2160 },   // 請求最高解析度
+                    advanced: [{ focusMode: "continuous" }] // 嘗試請求連續對焦 (Android有效)
+                }
+            };
+
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(stream => {
+                    video.srcObject = stream;
+                    // 對部分 Android 瀏覽器嘗試手動套用軌道設定
+                    const track = stream.getVideoTracks()[0];
+                    if(track.getCapabilities && track.getCapabilities().focusMode) {
+                        track.applyConstraints({ advanced: [{ focusMode: "continuous" }] })
+                             .catch(e => console.log("Focus mode not supported"));
+                    }
+                })
+                .catch(err => {
+                    console.error("Camera Error:", err);
+                    // 如果高畫質失敗，嘗試降級開啟
+                    if (err.name === 'OverconstrainedError') {
+                        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                            .then(stream => video.srcObject = stream);
+                    } else {
+                        alert("相機開啟失敗，請確認 HTTPS 權限");
+                    }
+                });
         }
 
-        // --- 拍照與繪圖 (核心修改處) ---
+        // --- 拍照與繪圖 ---
         snapBtn.addEventListener('click', () => {
             const context = canvas.getContext('2d');
             const w = video.videoWidth;
             const h = video.videoHeight;
             
-            // 增加底部白邊高度 (35%) 讓文字更舒適
-            const footerHeight = h * 0.35; 
+            // 縮減底部白邊比例 (從 0.35 改為 0.30)，讓照片佔比更大
+            const footerHeight = h * 0.30; 
             
             canvas.width = w;
             canvas.height = h + footerHeight;
@@ -443,29 +470,28 @@
             const fontSizeS = Math.floor(w * 0.04);  // 小 (日期)
             const padX = w * 0.04; // 左右邊距
             
-            // === 排版座標計算 (三層結構) ===
-            // 第一層 Y (地點 & 日期)
-            const row1Y = h + (footerHeight * 0.22); 
-            // 第二層 Y (項目)
-            const row2Y = h + (footerHeight * 0.52); 
-            // 第三層 Y (數量 & 人員)
-            const row3Y = h + (footerHeight * 0.82); 
+            // === 排版座標計算 (微調高度比例) ===
+            const row1Y = h + (footerHeight * 0.25); 
+            const row2Y = h + (footerHeight * 0.55); 
+            const row3Y = h + (footerHeight * 0.85); 
 
             // --- Row 1: 左地點 / 右日期 ---
             context.textAlign = "left";
             if (loc !== "") {
                 context.font = `bold ${fontSizeL}px '微軟正黑體', Arial`;
                 context.fillStyle = "#000"; 
-                context.fillText(`門市：${loc}`, padX, row1Y);
+                // DC 自動判斷
+                let prefix = loc.includes("門市") ? "門市" : "DC";
+                context.fillText(`${prefix}：${loc}`, padX, row1Y);
             }
 
-            // 日期移到第一層右邊 (避免跟人員擠)
+            // 日期
             context.textAlign = "right";
             context.font = `${fontSizeS}px '微軟正黑體', Arial`;
-            context.fillStyle = "#666"; // 灰字
+            context.fillStyle = "#666"; 
             context.fillText(dateText, w - padX, row1Y);
 
-            // --- Row 2: 項目 (獨佔一行) ---
+            // --- Row 2: 項目 ---
             context.textAlign = "left";
             context.font = `${fontSizeM}px '微軟正黑體', Arial`;
             context.fillStyle = "#333"; 
@@ -473,14 +499,12 @@
             context.fillText(`項目：${finalAct}`, padX, row2Y);
 
             // --- Row 3: 左數量 / 右人員 ---
-            // 數量 (紅字)
             if (qtyText !== "") {
                 context.font = `bold ${fontSizeM}px '微軟正黑體', Arial`;
                 context.fillStyle = "#D32F2F"; 
                 context.fillText(`數量：${qtyText}`, padX, row3Y);
             }
 
-            // 人員 (藍字)
             if (person !== "") {
                 context.textAlign = "right";
                 context.font = `bold ${fontSizeM}px '微軟正黑體', Arial`;
@@ -488,7 +512,7 @@
                 context.fillText(`麻煩 ${person} 協助`, w - padX, row3Y);
             }
 
-            // 分隔線 (照片與白底之間)
+            // 分隔線
             context.strokeStyle = "#ccc";
             context.lineWidth = 2;
             context.beginPath();
