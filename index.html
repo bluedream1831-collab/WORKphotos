@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>物流作業紀錄 (標準比例版)</title>
+    <title>拍照作業</title>
     <style>
         /* 1. 基礎設定 */
         body { 
@@ -80,7 +80,7 @@
         /* 2. 相機區塊 */
         #camera-wrapper {
             width: 100%;
-            height: 55vh; /* 維持大畫面預覽 */
+            height: 55vh; 
             max-height: 600px;
             background: #000;
             overflow: hidden;
@@ -97,7 +97,7 @@
         video {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* 預覽時填滿 */
+            object-fit: cover;
         }
 
         /* 3. 控制區塊 */
@@ -119,6 +119,7 @@
             font-weight: bold;
         }
 
+        /* 通用輸入框樣式 */
         select, input {
             width: 100%;
             padding: 8px; 
@@ -131,11 +132,31 @@
             height: 42px; 
         }
 
-        #action-input {
+        /* 作業輸入框區塊 (包含切換邏輯) */
+        #action-manual-group {
+            display: none; /* 預設隱藏 */
+            gap: 5px;
+        }
+        #action-input-manual {
             border: 1px solid #007bff; 
             background-color: #f0f8ff; 
+            flex: 1;
+        }
+        #action-reset-btn {
+            width: 50px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
+        /* 數量輸入框容器 */
         .input-group {
             display: flex;
             gap: 8px;
@@ -238,7 +259,8 @@
     <!-- 0. 登入鎖定畫面 -->
     <div id="login-screen">
         <div id="login-box">
-            <h3>🔒 物流作業系統</h3>
+            <!-- 這裡修改：改為 拍照作業 -->
+            <h3>🔒 拍照作業</h3>
             <p style="font-size:12px; color:#ccc;">請輸入員工通行碼</p>
             <input type="password" id="pass-input" placeholder="密碼" pattern="[0-9]*" inputmode="numeric">
             <button id="login-btn">登入</button>
@@ -277,21 +299,31 @@
                 </select>
             </div>
 
+            <!-- 作業選擇區 -->
             <div class="grid-item">
-                <span class="label-text">📦 項目 (可選/可自打)</span>
-                <input list="action-list" id="action-input" placeholder="選擇或輸入">
-                <datalist id="action-list">
-                    <option value="庫存調撥">
-                    <option value="出貨紀錄">
-                    <option value="隨下午ES車出貨">
-                    <option value="隨晚ES車出貨">
-                    <option value="門市寄庫">
-                    <option value="進貨驗收">
-                    <option value="退貨處理">
-                    <option value="品溫異常">
-                    <option value="異常回報">
-                    <option value="備註：">
-                </datalist>
+                <span class="label-text">📦 作業 (選錯可重選)</span>
+                
+                <!-- 模式1: 下拉選單 (預設) -->
+                <select id="action-select">
+                    <option value="" selected>請選擇作業...</option>
+                    <option value="庫存調撥">庫存調撥</option>
+                    <option value="出貨紀錄">出貨紀錄</option>
+                    <option value="隨下午ES車出貨">隨下午ES車出貨</option>
+                    <option value="隨晚ES車出貨">隨晚ES車出貨</option>
+                    <option value="門市寄庫">門市寄庫</option>
+                    <option value="進貨驗收">進貨驗收</option>
+                    <option value="退貨處理">退貨處理</option>
+                    <option value="品溫異常">品溫異常</option>
+                    <option value="異常回報">異常回報</option>
+                    <option value="備註：">備註：</option>
+                    <option value="CUSTOM_INPUT" style="color:#007bff; font-weight:bold;">✏️ 自行輸入...</option>
+                </select>
+
+                <!-- 模式2: 手動輸入 (隱藏) -->
+                <div id="action-manual-group">
+                    <input type="text" id="action-input-manual" placeholder="請輸入作業名稱">
+                    <button id="action-reset-btn" type="button">↩ 重選</button>
+                </div>
             </div>
 
             <div class="grid-item">
@@ -357,10 +389,15 @@
         const resetBtn = document.getElementById('reset-btn');
         
         const locationSelect = document.getElementById('location-select');
-        const actionInput = document.getElementById('action-input'); 
         const personSelect = document.getElementById('person-select');
         const palletInput = document.getElementById('pallet-input');
         const boxInput = document.getElementById('box-input');
+
+        // 作業相關元素
+        const actionSelect = document.getElementById('action-select');
+        const actionManualGroup = document.getElementById('action-manual-group');
+        const actionInputManual = document.getElementById('action-input-manual');
+        const actionResetBtn = document.getElementById('action-reset-btn');
 
         // --- 登入與記憶 ---
         function checkAutoLogin() {
@@ -399,12 +436,28 @@
         locationSelect.addEventListener('change', () => localStorage.setItem(STORAGE_LOC_KEY, locationSelect.value));
         personSelect.addEventListener('change', () => localStorage.setItem(STORAGE_PERSON_KEY, personSelect.value));
 
+        // --- 作業選擇切換邏輯 ---
+        actionSelect.addEventListener('change', function() {
+            if (this.value === 'CUSTOM_INPUT') {
+                this.style.display = 'none';
+                actionManualGroup.style.display = 'flex';
+                actionInputManual.focus();
+            }
+        });
+
+        actionResetBtn.addEventListener('click', function() {
+            actionManualGroup.style.display = 'none';
+            actionSelect.style.display = 'block';
+            actionSelect.value = ""; 
+            actionInputManual.value = ""; 
+        });
+
         // --- 相機 (高畫質) ---
         function startCamera() {
             const constraints = {
                 video: {
                     facingMode: "environment",
-                    width: { ideal: 4096 }, // 請求最大
+                    width: { ideal: 4096 }, 
                     height: { ideal: 2160 },
                     advanced: [{ focusMode: "continuous" }] 
                 }
@@ -421,7 +474,6 @@
                 })
                 .catch(err => {
                     console.error("Camera Error:", err);
-                    // 降級處理
                     if (err.name === 'OverconstrainedError') {
                         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
                             .then(stream => video.srcObject = stream);
@@ -431,27 +483,21 @@
                 });
         }
 
-        // --- 拍照、裁切與合成 (核心修正) ---
+        // --- 拍照、裁切與合成 ---
         snapBtn.addEventListener('click', () => {
             const context = canvas.getContext('2d');
             
-            // 原始來源尺寸 (可能是 1080x1920 這種瘦長的)
             const w = video.videoWidth;
             const rawH = video.videoHeight;
 
-            // === 修正重點：強制裁切成標準 4:3 比例 ===
-            // 目標照片高度 = 寬度 * 1.33 (即 4:3)
-            // 例如寬度 1080，高度就會限制在 1440，多餘的上下切掉
+            // 強制裁切成 4:3
             let targetH = w * (4/3); 
-            if (targetH > rawH) targetH = rawH; // 保護機制
-
-            // 計算裁切起始點 (置中裁切)
+            if (targetH > rawH) targetH = rawH;
             const sourceY = (rawH - targetH) / 2;
 
-            // 底部白邊高度 (依照裁切後的標準高度來算 30%)
+            // 底部白邊高度 30%
             const footerHeight = targetH * 0.30; 
             
-            // 設定畫布總尺寸
             canvas.width = w;
             canvas.height = targetH + footerHeight;
 
@@ -459,13 +505,22 @@
             context.fillStyle = "#FFFFFF";
             context.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 2. 畫照片 (帶裁切參數)
-            // drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh)
+            // 2. 畫照片 (裁切)
             context.drawImage(video, 0, sourceY, w, targetH, 0, 0, w, targetH);
 
             // 3. 準備文字
+            // 判斷作業文字來源
+            let act = "";
+            if (actionSelect.style.display !== 'none') {
+                // 選單模式
+                act = actionSelect.value;
+                if(act === 'CUSTOM_INPUT') act = ""; 
+            } else {
+                // 手動模式
+                act = actionInputManual.value;
+            }
+
             const loc = locationSelect.value;
-            const act = actionInput.value; 
             const person = personSelect.value; 
             const dateText = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
             
@@ -481,17 +536,16 @@
             const fontSizeS = Math.floor(w * 0.04);  
             const padX = w * 0.04; 
             
-            // 座標計算 (基於 targetH 開始往下畫)
+            // 座標計算
             const row1Y = targetH + (footerHeight * 0.25); 
             const row2Y = targetH + (footerHeight * 0.55); 
             const row3Y = targetH + (footerHeight * 0.85); 
 
-            // Row 1
+            // Row 1 (地點 & 日期)
             context.textAlign = "left";
             if (loc !== "") {
                 context.font = `bold ${fontSizeL}px '微軟正黑體', Arial`;
                 context.fillStyle = "#000"; 
-                // DC 判斷
                 let prefix = loc.includes("門市") ? "門市" : "DC";
                 context.fillText(`${prefix}：${loc}`, padX, row1Y);
             }
@@ -501,14 +555,16 @@
             context.fillStyle = "#666"; 
             context.fillText(dateText, w - padX, row1Y);
 
-            // Row 2
-            context.textAlign = "left";
-            context.font = `${fontSizeM}px '微軟正黑體', Arial`;
-            context.fillStyle = "#333"; 
-            const finalAct = act !== "" ? act : "無詳細項目"; 
-            context.fillText(`項目：${finalAct}`, padX, row2Y);
+            // Row 2 (作業)
+            if (act !== "") {
+                context.textAlign = "left";
+                context.font = `${fontSizeM}px '微軟正黑體', Arial`;
+                context.fillStyle = "#333"; 
+                context.fillText(`作業：${act}`, padX, row2Y);
+            }
 
-            // Row 3
+            // Row 3 (數量 & 人員)
+            context.textAlign = "left"; 
             if (qtyText !== "") {
                 context.font = `bold ${fontSizeM}px '微軟正黑體', Arial`;
                 context.fillStyle = "#D32F2F"; 
@@ -535,9 +591,12 @@
             resultImage.src = dataURL;
             resultArea.style.display = 'block';
 
-            let filename = `${loc}_${finalAct}`;
-            if(qtyText) filename += `_${qtyText.replace(/ /g, '')}`;
+            // 檔名
+            let filename = loc !== "" ? loc : "Snapshot";
+            if (act !== "") filename += `_${act}`;
+            if (qtyText !== "") filename += `_${qtyText.replace(/ /g, '')}`;
             filename += `_${dateText.replace(/\//g, '')}.jpg`;
+            
             autoDownload(dataURL, filename);
         });
 
