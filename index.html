@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>出貨紀錄 (連續拍攝版)</title>
+    <title>出貨紀錄 (門市優先版)</title>
     <style>
         body { font-family: "微軟正黑體", sans-serif; text-align: center; background: #222; color: white; padding: 10px; margin: 0; }
         
@@ -46,16 +46,21 @@
 </head>
 <body>
 
-    <!-- 頂部錨點，方便跳轉回來 -->
+    <!-- 頂部錨點 -->
     <div id="top-anchor"></div>
 
     <div class="control-group">
         <div style="display:flex; gap:10px;">
             <div style="flex:1;">
                 <label>📍 門市/DC</label>
+                <!-- 修改處：已更新選單順序與名稱 -->
                 <select id="location-select">
-                    <option value="那瑪夏">那瑪夏</option>
-                    <option value="霧台">霧台</option>
+                    <!-- 門市 (置頂) -->
+                    <option value="那瑪廈門市">那瑪廈門市</option>
+                    <option value="霧台門市">霧台門市</option>
+                    <option value="桃源門市">桃源門市</option>
+                    
+                    <!-- 其他據點/DC -->
                     <option value="新市">新市</option>
                     <option value="新市物流園區">新市物流園區</option>
                     <option value="嘉義">嘉義</option>
@@ -96,7 +101,6 @@
 
     <!-- 結果區塊 -->
     <div id="result-area">
-        <!-- 新增：繼續拍下一張按鈕 -->
         <button id="reset-btn">🔄 繼續拍下一張 (回上方)</button>
         
         <div class="ios-alert">
@@ -112,7 +116,7 @@
         const resultArea = document.getElementById('result-area');
         const resultImage = document.getElementById('result-image');
         const snapBtn = document.getElementById('snap-btn');
-        const resetBtn = document.getElementById('reset-btn'); // 新增
+        const resetBtn = document.getElementById('reset-btn');
         
         const locationSelect = document.getElementById('location-select');
         const actionSelect = document.getElementById('action-select');
@@ -195,7 +199,6 @@
             resultImage.src = dataURL;
             resultArea.style.display = 'block';
             
-            // 滑動到結果區
             resultArea.scrollIntoView({behavior: "smooth"});
 
             // Android 自動下載
@@ -206,13 +209,10 @@
             autoDownload(dataURL, filename);
         });
 
-        // 3. 繼續拍下一張邏輯 (新增)
+        // 3. 繼續拍下一張
         resetBtn.addEventListener('click', () => {
-            // 隱藏結果區
             resultArea.style.display = 'none';
-            // 清空圖片釋放記憶體
             resultImage.src = "";
-            // 滾動回最上方
             window.scrollTo({top: 0, behavior: 'smooth'});
         });
 
