@@ -3,64 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>出貨與調撥紀錄系統</title>
+    <title>出貨紀錄系統 (簡潔版)</title>
     <style>
-        body { font-family: "微軟正黑體", sans-serif; text-align: center; background: #f4f4f4; padding: 10px; }
+        body { font-family: "微軟正黑體", sans-serif; text-align: center; background: #222; color: white; padding: 10px; margin: 0; }
         
-        /* 輸入控制區 */
-        .control-group { margin-bottom: 15px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: left;}
-        label { display: block; margin-top: 10px; margin-bottom: 5px; font-weight: bold; color: #333; }
-        select, input { width: 100%; padding: 12px; font-size: 16px; margin-bottom: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        /* 輸入區塊 - 改為淺灰色讓視覺專注在螢幕 */
+        .control-group { margin-bottom: 10px; background: #333; padding: 10px; border-radius: 8px; text-align: left; border: 1px solid #555;}
+        label { display: block; margin-top: 5px; font-size: 14px; color: #ccc; }
+        select, input { width: 100%; padding: 8px; font-size: 16px; margin-bottom: 5px; border: 1px solid #555; border-radius: 4px; box-sizing: border-box; background: #fff; }
         
-        /* 相機視窗 */
-        #camera-box { position: relative; width: 100%; max-width: 480px; margin: 0 auto; background: #000; border-radius: 8px; overflow: hidden;}
+        /* 相機畫面 - 盡量滿版 */
+        #camera-box { position: relative; width: 100%; max-width: 600px; margin: 0 auto; background: #000; border-radius: 4px; overflow: hidden; border: 2px solid #555;}
         video { width: 100%; display: block; }
         
-        /* 按鈕樣式 */
-        #snap-btn { width: 100%; max-width: 480px; padding: 15px; font-size: 20px; margin-top: 15px; cursor: pointer; background: #0056b3; color: white; border: none; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-        #snap-btn:active { background: #004494; transform: translateY(2px); }
-
-        /* 結果區 (剛開始隱藏) */
-        #result-area { margin-top: 20px; display: none; }
-        #result-image { width: 100%; max-width: 480px; border: 2px solid #333; }
-        .info-text { color: #d9534f; font-size: 14px; font-weight: bold; margin-top: 5px; }
+        /* 拍照按鈕 */
+        #snap-btn { width: 100%; max-width: 600px; padding: 12px; font-size: 18px; margin-top: 10px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold; }
+        
+        /* 結果區 */
+        #result-area { margin-top: 15px; display: none; background: #222; padding-bottom: 50px;}
+        #result-image { width: 100%; max-width: 600px; border: 1px solid #555; }
+        .info-text { color: #aaa; font-size: 12px; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
     <div class="control-group">
-        <!-- 1. 地點 (已更新為指定地點) -->
-        <label>📍 地點選擇</label>
-        <select id="location-select">
-            <option value="那馬夏">那馬夏</option>
-            <option value="霧台">霧台</option>
-            <option value="新市">新市</option>
-        </select>
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1;">
+                <label>📍 地點</label>
+                <select id="location-select">
+                    <option value="那馬夏">那馬夏</option>
+                    <option value="霧台">霧台</option>
+                    <option value="新市">新市</option>
+                </select>
+            </div>
+            <div style="flex:1;">
+                <label>📦 項目</label>
+                <select id="action-select">
+                    <option value="出貨紀錄">出貨紀錄</option>
+                    <option value="庫存調撥">庫存調撥</option>
+                    <option value="異常回報">異常回報</option>
+                    <option value="其他備註">其他備註</option>
+                </select>
+            </div>
+        </div>
 
-        <!-- 2. 作業項目 (新增出貨紀錄) -->
-        <label>📦 作業項目 / 理由</label>
-        <select id="action-select">
-            <option value="出貨紀錄">出貨紀錄</option>
-            <option value="庫存調撥">庫存調撥</option>
-            <option value="異常回報">異常回報</option>
-            <option value="其他備註">其他備註</option>
-        </select>
-
-        <!-- 3. 協助人員 (若無則顯示無) -->
-        <label>🙋‍♂️ 麻煩協助人員 (選填)</label>
-        <input type="text" id="person-input" placeholder="若不需協助可留空">
+        <label>🙋‍♂️ 協助人員 (若無則免填)</label>
+        <input type="text" id="person-input" placeholder="輸入姓名...">
     </div>
 
     <div id="camera-box">
         <video id="video" autoplay playsinline></video>
     </div>
 
-    <button id="snap-btn">📸 拍照並自動存檔</button>
+    <button id="snap-btn">📸 拍照存檔</button>
 
+    <!-- 隱藏的畫布 -->
     <canvas id="canvas" style="display:none;"></canvas>
 
     <div id="result-area">
-        <p class="info-text">圖片已產生並嘗試下載...</p>
+        <p class="info-text">✅ 照片已生成 (若未自動下載，請長按圖片儲存)</p>
         <img id="result-image" src="" alt="Generated Photo">
     </div>
 
@@ -71,7 +73,6 @@
         const resultImage = document.getElementById('result-image');
         const snapBtn = document.getElementById('snap-btn');
         
-        // 輸入欄位
         const locationSelect = document.getElementById('location-select');
         const actionSelect = document.getElementById('action-select');
         const personInput = document.getElementById('person-input');
@@ -82,96 +83,88 @@
                 video.srcObject = stream;
             })
             .catch(err => {
-                alert("無法開啟相機，請確認網址為 HTTPS 開頭或已允許權限。\n錯誤訊息：" + err);
+                alert("無法開啟相機 (請確認 HTTPS 連線): " + err);
             });
 
-        // 2. 拍照與合成邏輯
+        // 2. 拍照邏輯
         snapBtn.addEventListener('click', () => {
             const context = canvas.getContext('2d');
             
-            // 取得影片尺寸
             const w = video.videoWidth;
             const h = video.videoHeight;
             
-            // 設定下方白底高度 (照片高度的 40% 以容納更多資訊)
-            const footerHeight = h * 0.4; 
+            // 修改：白底高度改為 18% (變很窄，不搶照片風采)
+            const footerHeight = h * 0.18; 
             
-            // 設定畫布總大小
             canvas.width = w;
             canvas.height = h + footerHeight;
 
-            // A. 繪製白底
+            // A. 畫白底
             context.fillStyle = "#FFFFFF";
             context.fillRect(0, 0, canvas.width, canvas.height);
 
-            // B. 繪製相機畫面
+            // B. 畫照片
             context.drawImage(video, 0, 0, w, h);
 
-            // C. 準備文字內容
-            const locationText = locationSelect.value;
-            const actionText = actionSelect.value;
-            // 判斷人員輸入，若為空則顯示 "無"
-            const personText = personInput.value.trim() !== "" ? personInput.value : "無";
-            const timeText = new Date().toLocaleString('zh-TW', { hour12: false });
+            // C. 準備文字
+            const loc = locationSelect.value;
+            const act = actionSelect.value;
+            const person = personInput.value.trim() !== "" ? personInput.value : "無";
+            // 修改：只抓取日期
+            const dateText = new Date().toLocaleDateString('zh-TW'); 
 
-            // D. 開始寫字
-            const textX = 40;
-            let textY = h + 70; // 起始 Y 座標
-            const lineHeight = 70; // 行距
-
+            // D. 寫字 (縮小字體)
+            // 設定邊距與起始點
+            const padX = 20; 
+            const startY = h + (footerHeight * 0.4); 
+            
             context.textAlign = "left";
             context.fillStyle = "#000000";
 
-            // 1. 地點 (大字)
-            context.font = "bold 60px '微軟正黑體', Arial";
-            context.fillText("地點：" + locationText, textX, textY);
+            // 我們把資訊分成左右兩邊寫，比較省空間
+            
+            // 左邊：地點 + 項目
+            context.font = "bold 32px '微軟正黑體', Arial"; // 字體變小 (原60)
+            context.fillText(`地點：${loc}`, padX, startY);
+            
+            context.font = "28px '微軟正黑體', Arial"; // 字體變小
+            context.fillText(`項目：${act}`, padX, startY + 40);
 
-            // 2. 作業項目
-            textY += lineHeight;
-            context.font = "50px '微軟正黑體', Arial";
-            context.fillText("項目：" + actionText, textX, textY);
+            // 右邊：協助人員 + 日期 (靠右對齊)
+            context.textAlign = "right";
+            const rightX = w - padX;
 
-            // 3. 協助人員 (特別用藍色標示)
-            textY += lineHeight;
-            context.fillStyle = "#0056b3"; 
-            context.fillText("協助人員：" + personText, textX, textY);
+            context.font = "bold 28px '微軟正黑體', Arial";
+            // 如果是"無"，顯示灰色，如果有名字，顯示藍色
+            if(person === "無") context.fillStyle = "#888"; 
+            else context.fillStyle = "#0056b3";
+            
+            context.fillText(`協助：${person}`, rightX, startY);
 
-            // 4. 時間 (灰色小字)
-            textY += lineHeight;
-            context.fillStyle = "#555555";
-            context.font = "40px '微軟正黑體', Arial";
-            context.fillText("時間：" + timeText, textX, textY);
+            context.fillStyle = "#555"; // 日期用深灰
+            context.fillText(`日期：${dateText}`, rightX, startY + 40);
 
-            // E. 畫分隔線
-            context.strokeStyle = "#333";
-            context.lineWidth = 5;
+            // E. 畫一條細線區隔照片與白底
+            context.strokeStyle = "#ccc";
+            context.lineWidth = 2;
             context.beginPath();
             context.moveTo(0, h);
             context.lineTo(w, h);
             context.stroke();
 
-            // 3. 顯示圖片
-            const dataURL = canvas.toDataURL('image/jpeg', 0.95);
+            // 3. 輸出與自動下載
+            const dataURL = canvas.toDataURL('image/jpeg', 0.9);
             resultImage.src = dataURL;
             resultArea.style.display = 'block';
-            
-            // 滾動視窗
             resultArea.scrollIntoView({behavior: "smooth"});
 
-            // 4. 自動存檔功能 (Auto Save)
-            autoDownload(dataURL);
+            autoDownload(dataURL, `${loc}_${act}_${dateText.replace(/\//g, '')}.jpg`);
         });
 
-        function autoDownload(url) {
-            // 建立一個暫時的下載連結
+        function autoDownload(url, filename) {
             const link = document.createElement('a');
-            // 設定檔名：地點_項目_時間.jpg
-            const fileName = `${locationSelect.value}_${actionSelect.value}_${Date.now()}.jpg`;
-            
-            link.download = fileName;
+            link.download = filename;
             link.href = url;
-            
-            // 觸發點擊
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
