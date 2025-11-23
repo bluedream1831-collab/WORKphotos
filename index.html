@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>出貨紀錄 (板箱專用版)</title>
+    <title>出貨紀錄 (可選無地點版)</title>
     <style>
         /* 基礎設定 */
         body { 
@@ -18,7 +18,7 @@
             box-sizing: border-box;
         }
 
-        /* 1. 控制區塊 (Grid 2x2) */
+        /* 控制區塊 (Grid 2x2) */
         .controls-grid {
             display: grid;
             grid-template-columns: 1fr 1fr; /* 左右兩欄 */
@@ -39,7 +39,7 @@
             font-weight: bold;
         }
 
-        /* 下拉選單樣式 */
+        /* 下拉選單 */
         select {
             width: 100%;
             padding: 8px 5px;
@@ -52,7 +52,7 @@
             height: 40px;
         }
 
-        /* 特殊設計：板/箱 輸入框容器 */
+        /* 板/箱 輸入框容器 */
         .input-group {
             display: flex;
             gap: 5px;
@@ -67,15 +67,15 @@
         .unit-input-wrapper input {
             width: 100%;
             height: 40px;
-            padding: 5px 25px 5px 8px; /* 右邊留空間給單位字 */
+            padding: 5px 25px 5px 8px;
             font-size: 16px;
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
-            text-align: center; /* 數字置中 */
+            text-align: center; 
         }
 
-        /* 單位文字 (板/箱) */
+        /* 單位文字 */
         .unit-input-wrapper .unit {
             position: absolute;
             right: 8px;
@@ -83,10 +83,10 @@
             transform: translateY(-50%);
             color: #888;
             font-size: 13px;
-            pointer-events: none; /* 讓點擊穿透 */
+            pointer-events: none;
         }
 
-        /* 2. 相機區塊 */
+        /* 相機區塊 */
         #camera-wrapper {
             flex-grow: 1;
             position: relative;
@@ -108,7 +108,7 @@
             object-fit: cover;
         }
 
-        /* 3. 按鈕 */
+        /* 拍照按鈕 */
         #snap-btn {
             width: 100%;
             max-width: 600px;
@@ -123,7 +123,7 @@
             font-weight: bold;
         }
 
-        /* 4. 結果顯示區 (覆蓋層) */
+        /* 結果顯示區 */
         #result-area {
             display: none;
             position: fixed;
@@ -174,6 +174,8 @@
         <div class="grid-item">
             <span class="label-text">📍 門市/DC</span>
             <select id="location-select">
+                <!-- 修改處：新增「無」選項 -->
+                <option value="">無 (不顯示)</option>
                 <option value="那瑪夏門市">那瑪夏門市</option>
                 <option value="霧台門市">霧台門市</option>
                 <option value="桃源門市">桃源門市</option>
@@ -210,7 +212,7 @@
             </select>
         </div>
 
-        <!-- 右下：數量輸入 (分成兩格) -->
+        <!-- 右下：數量輸入 -->
         <div class="grid-item">
             <span class="label-text">📝 數量 (只需填數字)</span>
             <div class="input-group">
@@ -259,7 +261,6 @@
         const locationSelect = document.getElementById('location-select');
         const actionSelect = document.getElementById('action-select');
         const personSelect = document.getElementById('person-select');
-        // 取得新的輸入框
         const palletInput = document.getElementById('pallet-input');
         const boxInput = document.getElementById('box-input');
 
@@ -278,7 +279,7 @@
             
             const w = video.videoWidth;
             const h = video.videoHeight;
-            const footerHeight = h * 0.15; // 15% 高度
+            const footerHeight = h * 0.15; 
             
             canvas.width = w;
             canvas.height = h + footerHeight;
@@ -296,13 +297,11 @@
             const person = personSelect.value; 
             const dateText = new Date().toLocaleDateString('zh-TW');
             
-            // --- 處理數量文字 ---
             const pVal = palletInput.value.trim();
             const bVal = boxInput.value.trim();
             let qtyText = "";
-
-            if(pVal !== "") qtyText += `${pVal}板 `; // 若有輸入板，加 "X板 "
-            if(bVal !== "") qtyText += `${bVal}箱`; // 若有輸入箱，加 "Y箱"
+            if(pVal !== "") qtyText += `${pVal}板 `;
+            if(bVal !== "") qtyText += `${bVal}箱`;
             
             // 字體與排版
             const fontSizeMain = Math.floor(w * 0.035); 
@@ -316,14 +315,19 @@
             context.textAlign = "left";
             context.fillStyle = "#000000"; 
 
-            // 左側
-            context.font = `bold ${fontSizeMain}px '微軟正黑體', Arial`;
-            context.fillText(`門市/DC：${loc}`, padX, line1Y);
+            // --- 左側內容 ---
             
+            // 修改處：判斷是否有選地點，有才顯示
+            if (loc !== "") {
+                context.font = `bold ${fontSizeMain}px '微軟正黑體', Arial`;
+                context.fillText(`門市/DC：${loc}`, padX, line1Y);
+            }
+            
+            // 項目 (永遠顯示在第二行位置)
             context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
             context.fillText(`項目：${act}`, padX, line2Y);
 
-            // 右側
+            // --- 右側內容 ---
             context.textAlign = "right";
             const rightX = w - padX;
 
@@ -339,12 +343,11 @@
             context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
             context.fillText(`日期：${dateText}`, rightX, line2Y);
 
-            // --- 新增：顯示板箱數量 ---
+            // --- 底部數量 ---
             if (qtyText !== "") {
                 context.textAlign = "left"; 
                 context.fillStyle = "#D32F2F"; // 紅色
                 context.font = `bold ${fontSizeSub}px '微軟正黑體', Arial`;
-                // 顯示：數量：2板 5箱
                 context.fillText(`數量：${qtyText}`, padX, line3Y);
             }
 
@@ -361,9 +364,12 @@
             resultImage.src = dataURL;
             resultArea.style.display = 'block';
 
-            // 檔名邏輯
-            let filename = `${loc}_${act}`;
-            if(qtyText !== "") filename += `_${qtyText.replace(/ /g, '_')}`; // 檔名把空格換底線
+            // 檔名邏輯：如果有地點就加地點，沒有就只顯示項目
+            let filename = "";
+            if (loc !== "") filename += `${loc}_`;
+            filename += `${act}`;
+            
+            if(qtyText !== "") filename += `_${qtyText.replace(/ /g, '_')}`;
             filename += `_${dateText.replace(/\//g, '')}.jpg`;
 
             autoDownload(dataURL, filename);
@@ -373,9 +379,6 @@
         resetBtn.addEventListener('click', () => {
             resultArea.style.display = 'none';
             resultImage.src = "";
-            // 可選：是否要清空數量？這裡預設不清空，方便拍同批貨
-            // palletInput.value = "";
-            // boxInput.value = "";
         });
 
         function autoDownload(url, filename) {
