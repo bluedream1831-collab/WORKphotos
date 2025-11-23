@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>物流作業紀錄系統 (加密版)</title>
+    <title>物流作業紀錄 (修復版)</title>
     <style>
-        /* 1. 基礎設定 */
+        /* 1. 基礎設定 - 修復滑動問題 */
         body { 
             font-family: "微軟正黑體", sans-serif; 
             background: #FFFFFF; 
             color: #333; 
             margin: 0; 
-            padding: 5px;
-            height: 100vh;
+            padding: 10px; /* 增加一點邊距 */
+            min-height: 100vh; /* 最小高度為螢幕高 */
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
-            overflow: hidden; /* 防止登入前滾動 */
+            /* 關鍵修正：允許垂直捲動 */
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch; /* 讓 iOS 滑動更順暢 */
         }
 
         /* --- 登入畫面樣式 --- */
@@ -25,7 +27,7 @@
             top: 0; left: 0; right: 0; bottom: 0;
             background: #222;
             z-index: 9999;
-            display: flex;
+            display: flex; /* 預設使用 Flex，JS 控制隱藏 */
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -66,21 +68,23 @@
             display: none;
         }
 
-        /* --- 主程式區塊 (預設隱藏) --- */
+        /* --- 主程式區塊 --- */
         #app-content {
-            display: none; /* 登入後才顯示 */
+            display: none; /* 登入後 JS 改為 flex 或 block */
             flex-direction: column;
-            height: 100%;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         /* 2. 控制區塊 (2x2 排列) */
         .controls-grid {
             display: grid;
             grid-template-columns: 1fr 1fr; 
-            gap: 6px; 
-            margin-bottom: 5px;
+            gap: 8px; /* 間距加大一點點 */
+            margin-bottom: 10px;
             background: #f8f9fa;
-            padding: 8px;
+            padding: 10px;
             border-radius: 8px;
             border: 1px solid #ddd;
         }
@@ -88,25 +92,24 @@
         /* 標題小字 */
         .grid-item span.label-text {
             display: block;
-            font-size: 11px;
-            color: #666;
-            margin-bottom: 3px;
+            font-size: 12px; /* 字體稍微調大 */
+            color: #555;
+            margin-bottom: 4px;
             font-weight: bold;
-            white-space: normal; 
             line-height: 1.2;
         }
 
         /* 下拉選單 & 輸入框 */
         select, input {
             width: 100%;
-            padding: 8px 5px;
-            font-size: 15px;
+            padding: 10px 5px; /* 增加觸控高度 */
+            font-size: 16px;   /* 避免 iOS 自動縮放 */
             border: 1px solid #ccc;
             border-radius: 4px;
             background: #fff;
             color: #333;
             box-sizing: border-box;
-            height: 40px;
+            height: 45px; /* 高度固定 */
         }
 
         /* 項目輸入框特別樣式 */
@@ -141,20 +144,20 @@
             pointer-events: none;
         }
 
-        /* 3. 相機區塊 */
+        /* 3. 相機區塊 - 改用固定比例，避免撐開 */
         #camera-wrapper {
-            flex-grow: 1;
-            position: relative;
             width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
+            /* 設定一個適當的高度，或讓它自動撐開但不要超過畫面太多 */
+            height: 60vh; 
+            max-height: 500px;
             background: #000;
             overflow: hidden;
-            border-radius: 4px;
-            border: 1px solid #333;
+            border-radius: 8px;
+            border: 2px solid #333;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin-bottom: 10px;
         }
         
         video {
@@ -163,29 +166,29 @@
             object-fit: cover;
         }
 
-        /* 4. 拍照按鈕 */
+        /* 4. 拍照按鈕 - 確保很大很好按 */
         #snap-btn {
             width: 100%;
-            max-width: 600px;
-            padding: 12px;
-            font-size: 16px;
-            margin: 8px auto 0 auto;
+            padding: 15px;
+            font-size: 18px;
+            margin-bottom: 30px; /* 下方留白，避免貼底 */
             cursor: pointer;
             background: #28a745;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
 
-        /* 5. 結果顯示區 */
+        /* 5. 結果顯示區 (全螢幕覆蓋) */
         #result-area {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(255,255,255,0.98);
-            z-index: 999;
-            overflow-y: auto;
+            z-index: 10000;
+            overflow-y: auto; /* 結果頁也可以滑動 */
             padding: 20px;
             text-align: center;
         }
@@ -199,25 +202,26 @@
         }
 
         #reset-btn {
-            padding: 10px 30px;
+            padding: 12px 30px;
             font-size: 16px;
             background: #007bff;
             color: white;
             border: none;
             border-radius: 30px;
             cursor: pointer;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
 
         .ios-alert {
             background: #ffc107;
             color: #000;
-            padding: 5px 15px;
+            padding: 8px 15px;
             border-radius: 20px;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: bold;
             display: inline-block;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -227,14 +231,14 @@
     <div id="login-screen">
         <div id="login-box">
             <h3>🔒 系統鎖定</h3>
-            <p style="font-size:12px; color:#ccc;">請輸入員工通行碼</p>
-            <input type="password" id="pass-input" placeholder="請輸入密碼" pattern="[0-9]*" inputmode="numeric">
+            <p style="font-size:12px; color:#ccc;">請輸入員工通行碼 (8888)</p>
+            <input type="password" id="pass-input" placeholder="密碼" pattern="[0-9]*" inputmode="numeric">
             <button id="login-btn">登入</button>
             <p id="login-msg">❌ 密碼錯誤</p>
         </div>
     </div>
 
-    <!-- 主程式區塊 (預設隱藏) -->
+    <!-- 主程式區塊 -->
     <div id="app-content">
 
         <!-- 控制區 -->
@@ -261,7 +265,7 @@
                 </select>
             </div>
 
-            <!-- 右上：項目 (可選/可自打) -->
+            <!-- 右上：項目 -->
             <div class="grid-item">
                 <span class="label-text">📦 項目 (可選/可自打)</span>
                 <input list="action-list" id="action-input" placeholder="請點選或輸入">
@@ -315,12 +319,13 @@
         <!-- 拍照按鈕 -->
         <button id="snap-btn">📸 拍照存檔</button>
 
-        <!-- 畫布 -->
+        <!-- 畫布 (隱藏) -->
         <canvas id="canvas" style="display:none;"></canvas>
 
         <!-- 結果顯示區 -->
         <div id="result-area">
             <div style="max-width: 600px; margin: 0 auto;">
+                <br>
                 <div class="ios-alert">⚠️ iPhone 請「長按圖片」加入照片</div>
                 <br>
                 <img id="result-image" src="" alt="Generated Photo">
@@ -332,8 +337,9 @@
     </div> <!-- app-content end -->
 
     <script>
-        // --- 0. 密碼設定 (請在這裡修改密碼) ---
+        // --- 0. 密碼與自動登入設定 ---
         const ACCESS_PASSWORD = "8888"; 
+        const LOGIN_KEY = "LOGISTICS_LOGIN_DATE"; // 儲存日期的 Key
 
         const loginScreen = document.getElementById('login-screen');
         const appContent = document.getElementById('app-content');
@@ -341,26 +347,48 @@
         const loginBtn = document.getElementById('login-btn');
         const loginMsg = document.getElementById('login-msg');
 
-        // 登入檢查函式
-        function checkLogin() {
-            if (passInput.value === ACCESS_PASSWORD) {
-                // 密碼正確
-                loginScreen.style.display = "none";
-                appContent.style.display = "flex";
-                // 啟動相機
-                startCamera();
+        // 檢查是否已經登入過
+        function checkAutoLogin() {
+            const today = new Date().toDateString(); // 取得今天日期字串 (例: "Sun Nov 23 2025")
+            const lastLoginDate = localStorage.getItem(LOGIN_KEY);
+
+            if (lastLoginDate === today) {
+                // 日期一樣，略過登入
+                enterApp();
             } else {
-                // 密碼錯誤
+                // 日期不同，顯示登入畫面
+                loginScreen.style.display = "flex";
+            }
+        }
+
+        // 手動登入
+        function manualLogin() {
+            if (passInput.value === ACCESS_PASSWORD) {
+                // 密碼正確，儲存今天日期
+                const today = new Date().toDateString();
+                localStorage.setItem(LOGIN_KEY, today);
+                
+                enterApp();
+            } else {
                 loginMsg.style.display = "block";
                 passInput.value = "";
             }
         }
 
-        // 綁定登入按鈕與 Enter 鍵
-        loginBtn.addEventListener('click', checkLogin);
+        // 進入 App 主畫面
+        function enterApp() {
+            loginScreen.style.display = "none";
+            appContent.style.display = "flex";
+            startCamera(); // 啟動相機
+        }
+
+        loginBtn.addEventListener('click', manualLogin);
         passInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') checkLogin();
+            if (e.key === 'Enter') manualLogin();
         });
+
+        // 網頁載入時先檢查
+        window.onload = checkAutoLogin;
 
 
         // --- 主程式邏輯 ---
@@ -377,18 +405,19 @@
         const palletInput = document.getElementById('pallet-input');
         const boxInput = document.getElementById('box-input');
 
-        // 1. 啟動相機 (包成函式，登入後才執行)
         function startCamera() {
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
                 .then(stream => {
                     video.srcObject = stream;
                 })
                 .catch(err => {
-                    alert("相機開啟失敗 (請確認已允許權限/使用HTTPS): " + err);
+                    // 在手機上某些瀏覽器可能需要 HTTPS 才能開啟相機
+                    console.error("Camera Error:", err);
+                    alert("相機開啟失敗。請確認：\n1.網址是 HTTPS 開頭\n2.已允許相機權限");
                 });
         }
 
-        // 2. 拍照與合成邏輯
+        // 拍照與合成
         snapBtn.addEventListener('click', () => {
             const context = canvas.getContext('2d');
             
@@ -406,7 +435,7 @@
             // 畫照片
             context.drawImage(video, 0, 0, w, h);
 
-            // 準備資料
+            // 資料準備
             const loc = locationSelect.value;
             const act = actionInput.value; 
             const person = personSelect.value; 
@@ -430,18 +459,17 @@
             context.textAlign = "left";
             context.fillStyle = "#000000"; 
 
-            // 左側內容
+            // 左側
             if (loc !== "") {
                 context.font = `bold ${fontSizeMain}px '微軟正黑體', Arial`;
                 context.fillText(`門市/DC：${loc}`, padX, line1Y);
             }
             
-            // 項目
             context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
             const finalAct = act !== "" ? act : "無紀錄"; 
             context.fillText(`項目：${finalAct}`, padX, line2Y);
 
-            // 右側內容
+            // 右側
             context.textAlign = "right";
             const rightX = w - padX;
 
@@ -451,12 +479,11 @@
                 context.fillText(`麻煩 ${person} 協助，感謝`, rightX, line1Y);
             }
 
-            // 日期
             context.fillStyle = "#555";
             context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
             context.fillText(`日期：${dateText}`, rightX, line2Y);
 
-            // 底部數量
+            // 數量
             if (qtyText !== "") {
                 context.textAlign = "left"; 
                 context.fillStyle = "#D32F2F"; 
@@ -477,24 +504,25 @@
             resultImage.src = dataURL;
             resultArea.style.display = 'block';
 
-            // 檔名邏輯
+            // 檔名
             let filename = "";
             if (loc !== "") filename += `${loc}_`;
             filename += `${finalAct}`;
-            
             if(qtyText !== "") filename += `_${qtyText.replace(/ /g, '_')}`;
             filename += `_${dateText.replace(/\//g, '')}.jpg`;
 
             autoDownload(dataURL, filename);
         });
 
-        // 3. 繼續拍下一張
+        // 繼續拍
         resetBtn.addEventListener('click', () => {
             resultArea.style.display = 'none';
             resultImage.src = "";
+            // 回到最上面
+            window.scrollTo({top: 0, behavior: 'smooth'});
         });
 
-        // 自動下載
+        // 下載
         function autoDownload(url, filename) {
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             if (isIOS) return; 
