@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>物流作業紀錄系統</title>
+    <title>物流作業紀錄系統 (加密版)</title>
     <style>
         /* 1. 基礎設定 */
         body { 
@@ -16,6 +16,61 @@
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
+            overflow: hidden; /* 防止登入前滾動 */
+        }
+
+        /* --- 登入畫面樣式 --- */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #222;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        #login-box {
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 80%;
+            max-width: 300px;
+            border: 1px solid #555;
+        }
+        #pass-input {
+            width: 100%;
+            padding: 10px;
+            margin: 15px 0;
+            font-size: 18px;
+            text-align: center;
+            border-radius: 5px;
+            border: none;
+        }
+        #login-btn {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        #login-msg {
+            color: #ff4d4d;
+            margin-top: 10px;
+            font-size: 14px;
+            display: none;
+        }
+
+        /* --- 主程式區塊 (預設隱藏) --- */
+        #app-content {
+            display: none; /* 登入後才顯示 */
+            flex-direction: column;
+            height: 100%;
         }
 
         /* 2. 控制區塊 (2x2 排列) */
@@ -168,99 +223,147 @@
 </head>
 <body>
 
-    <!-- 控制區 -->
-    <div class="controls-grid">
-        <!-- 左上：地點 -->
-        <div class="grid-item">
-            <span class="label-text">📍 門市/DC</span>
-            <select id="location-select">
-                <option value="">無 (不顯示)</option>
-                <option value="那瑪夏門市">那瑪夏門市</option>
-                <option value="霧台門市">霧台門市</option>
-                <option value="桃源門市">桃源門市</option>
-                <option value="新市">新市</option>
-                <option value="新市物流園區">新市物流園區</option>
-                <option value="嘉義">嘉義</option>
-                <option value="台中">台中</option>
-                <option value="大肚">大肚</option>
-                <option value="湖口">湖口</option>
-                <option value="五股">五股</option>
-                <option value="鶯歌">鶯歌</option>
-                <option value="電研">電研</option>
-                <option value="暖暖">暖暖</option>
-                <option value="花蓮">花蓮</option>
-            </select>
+    <!-- 0. 登入鎖定畫面 -->
+    <div id="login-screen">
+        <div id="login-box">
+            <h3>🔒 系統鎖定</h3>
+            <p style="font-size:12px; color:#ccc;">請輸入員工通行碼</p>
+            <input type="password" id="pass-input" placeholder="請輸入密碼" pattern="[0-9]*" inputmode="numeric">
+            <button id="login-btn">登入</button>
+            <p id="login-msg">❌ 密碼錯誤</p>
         </div>
+    </div>
 
-        <!-- 右上：項目 (可選/可自打) -->
-        <div class="grid-item">
-            <span class="label-text">📦 項目 (可選/可自打)</span>
-            <input list="action-list" id="action-input" placeholder="請點選或輸入">
-            <datalist id="action-list">
-                <option value="庫存調撥">
-                <option value="出貨紀錄">
-                <option value="隨下午ES車出貨">
-                <option value="隨晚ES車出貨">
-                <option value="門市寄庫">
-                <option value="進貨驗收">
-                <option value="退貨處理">
-                <option value="品溫異常">
-                <option value="異常回報">
-                <option value="備註：">
-            </datalist>
-        </div>
+    <!-- 主程式區塊 (預設隱藏) -->
+    <div id="app-content">
 
-        <!-- 左下：交接人員 -->
-        <div class="grid-item">
-            <span class="label-text">🙋‍♂️ 交接其他人員後續作業</span>
-            <select id="person-select">
-                <option value="">無 (不顯示)</option>
-                <option value="早班ES人員">早班ES人員</option>
-                <option value="晚班ES人員">晚班ES人員</option>
-                <option value="庫務人員">庫務人員</option>
-                <option value="幹部人員">幹部人員</option>
-            </select>
-        </div>
+        <!-- 控制區 -->
+        <div class="controls-grid">
+            <!-- 左上：地點 -->
+            <div class="grid-item">
+                <span class="label-text">📍 門市/DC</span>
+                <select id="location-select">
+                    <option value="">無 (不顯示)</option>
+                    <option value="那瑪夏門市">那瑪夏門市</option>
+                    <option value="霧台門市">霧台門市</option>
+                    <option value="桃源門市">桃源門市</option>
+                    <option value="新市">新市</option>
+                    <option value="新市物流園區">新市物流園區</option>
+                    <option value="嘉義">嘉義</option>
+                    <option value="台中">台中</option>
+                    <option value="大肚">大肚</option>
+                    <option value="湖口">湖口</option>
+                    <option value="五股">五股</option>
+                    <option value="鶯歌">鶯歌</option>
+                    <option value="電研">電研</option>
+                    <option value="暖暖">暖暖</option>
+                    <option value="花蓮">花蓮</option>
+                </select>
+            </div>
 
-        <!-- 右下：數量輸入 -->
-        <div class="grid-item">
-            <span class="label-text">📝 數量 (只需填數字)</span>
-            <div class="input-group">
-                <div class="unit-input-wrapper">
-                    <input type="number" id="pallet-input" placeholder="">
-                    <span class="unit">板</span>
-                </div>
-                <div class="unit-input-wrapper">
-                    <input type="number" id="box-input" placeholder="">
-                    <span class="unit">箱</span>
+            <!-- 右上：項目 (可選/可自打) -->
+            <div class="grid-item">
+                <span class="label-text">📦 項目 (可選/可自打)</span>
+                <input list="action-list" id="action-input" placeholder="請點選或輸入">
+                <datalist id="action-list">
+                    <option value="庫存調撥">
+                    <option value="出貨紀錄">
+                    <option value="隨下午ES車出貨">
+                    <option value="隨晚ES車出貨">
+                    <option value="門市寄庫">
+                    <option value="進貨驗收">
+                    <option value="退貨處理">
+                    <option value="品溫異常">
+                    <option value="異常回報">
+                    <option value="備註：">
+                </datalist>
+            </div>
+
+            <!-- 左下：交接人員 -->
+            <div class="grid-item">
+                <span class="label-text">🙋‍♂️ 交接其他人員後續作業</span>
+                <select id="person-select">
+                    <option value="">無 (不顯示)</option>
+                    <option value="早班ES人員">早班ES人員</option>
+                    <option value="晚班ES人員">晚班ES人員</option>
+                    <option value="庫務人員">庫務人員</option>
+                    <option value="幹部人員">幹部人員</option>
+                </select>
+            </div>
+
+            <!-- 右下：數量輸入 -->
+            <div class="grid-item">
+                <span class="label-text">📝 數量 (只需填數字)</span>
+                <div class="input-group">
+                    <div class="unit-input-wrapper">
+                        <input type="number" id="pallet-input" placeholder="">
+                        <span class="unit">板</span>
+                    </div>
+                    <div class="unit-input-wrapper">
+                        <input type="number" id="box-input" placeholder="">
+                        <span class="unit">箱</span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- 相機區 -->
-    <div id="camera-wrapper">
-        <video id="video" autoplay playsinline></video>
-    </div>
-
-    <!-- 拍照按鈕 -->
-    <button id="snap-btn">📸 拍照存檔</button>
-
-    <!-- 隱藏畫布 -->
-    <canvas id="canvas" style="display:none;"></canvas>
-
-    <!-- 結果顯示區 -->
-    <div id="result-area">
-        <div style="max-width: 600px; margin: 0 auto;">
-            <div class="ios-alert">⚠️ iPhone 請「長按圖片」加入照片</div>
-            <br>
-            <img id="result-image" src="" alt="Generated Photo">
-            <br>
-            <button id="reset-btn">🔄 繼續拍下一張</button>
+        <!-- 相機區 -->
+        <div id="camera-wrapper">
+            <video id="video" autoplay playsinline></video>
         </div>
-    </div>
+
+        <!-- 拍照按鈕 -->
+        <button id="snap-btn">📸 拍照存檔</button>
+
+        <!-- 畫布 -->
+        <canvas id="canvas" style="display:none;"></canvas>
+
+        <!-- 結果顯示區 -->
+        <div id="result-area">
+            <div style="max-width: 600px; margin: 0 auto;">
+                <div class="ios-alert">⚠️ iPhone 請「長按圖片」加入照片</div>
+                <br>
+                <img id="result-image" src="" alt="Generated Photo">
+                <br>
+                <button id="reset-btn">🔄 繼續拍下一張</button>
+            </div>
+        </div>
+
+    </div> <!-- app-content end -->
 
     <script>
+        // --- 0. 密碼設定 (請在這裡修改密碼) ---
+        const ACCESS_PASSWORD = "8888"; 
+
+        const loginScreen = document.getElementById('login-screen');
+        const appContent = document.getElementById('app-content');
+        const passInput = document.getElementById('pass-input');
+        const loginBtn = document.getElementById('login-btn');
+        const loginMsg = document.getElementById('login-msg');
+
+        // 登入檢查函式
+        function checkLogin() {
+            if (passInput.value === ACCESS_PASSWORD) {
+                // 密碼正確
+                loginScreen.style.display = "none";
+                appContent.style.display = "flex";
+                // 啟動相機
+                startCamera();
+            } else {
+                // 密碼錯誤
+                loginMsg.style.display = "block";
+                passInput.value = "";
+            }
+        }
+
+        // 綁定登入按鈕與 Enter 鍵
+        loginBtn.addEventListener('click', checkLogin);
+        passInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkLogin();
+        });
+
+
+        // --- 主程式邏輯 ---
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const resultArea = document.getElementById('result-area');
@@ -274,14 +377,16 @@
         const palletInput = document.getElementById('pallet-input');
         const boxInput = document.getElementById('box-input');
 
-        // 1. 啟動相機
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(err => {
-                alert("相機開啟失敗: " + err);
-            });
+        // 1. 啟動相機 (包成函式，登入後才執行)
+        function startCamera() {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(stream => {
+                    video.srcObject = stream;
+                })
+                .catch(err => {
+                    alert("相機開啟失敗 (請確認已允許權限/使用HTTPS): " + err);
+                });
+        }
 
         // 2. 拍照與合成邏輯
         snapBtn.addEventListener('click', () => {
@@ -325,23 +430,21 @@
             context.textAlign = "left";
             context.fillStyle = "#000000"; 
 
-            // --- 左側內容 ---
-            // 如果地點選「無」，則不顯示文字
+            // 左側內容
             if (loc !== "") {
                 context.font = `bold ${fontSizeMain}px '微軟正黑體', Arial`;
                 context.fillText(`門市/DC：${loc}`, padX, line1Y);
             }
             
-            // 項目 (預設顯示無紀錄)
+            // 項目
             context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
             const finalAct = act !== "" ? act : "無紀錄"; 
             context.fillText(`項目：${finalAct}`, padX, line2Y);
 
-            // --- 右側內容 ---
+            // 右側內容
             context.textAlign = "right";
             const rightX = w - padX;
 
-            // 交接人員
             if (person !== "") {
                 context.font = `bold ${fontSizeSub}px '微軟正黑體', Arial`;
                 context.fillStyle = "#0056b3"; 
@@ -353,7 +456,7 @@
             context.font = `${fontSizeSub}px '微軟正黑體', Arial`;
             context.fillText(`日期：${dateText}`, rightX, line2Y);
 
-            // --- 底部數量 (紅色) ---
+            // 底部數量
             if (qtyText !== "") {
                 context.textAlign = "left"; 
                 context.fillStyle = "#D32F2F"; 
@@ -374,7 +477,7 @@
             resultImage.src = dataURL;
             resultArea.style.display = 'block';
 
-            // 自動下載檔名邏輯
+            // 檔名邏輯
             let filename = "";
             if (loc !== "") filename += `${loc}_`;
             filename += `${finalAct}`;
@@ -391,7 +494,7 @@
             resultImage.src = "";
         });
 
-        // 自動下載函式
+        // 自動下載
         function autoDownload(url, filename) {
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             if (isIOS) return; 
