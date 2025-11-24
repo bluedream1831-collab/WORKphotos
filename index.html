@@ -22,7 +22,7 @@
             margin: 0; 
             padding: 10px; 
             padding-top: calc(10px + env(safe-area-inset-top)); 
-            padding-bottom: 100px; 
+            padding-bottom: 120px; /* 增加底部留白，避免說明被按鈕擋住 */
             min-height: 100vh; 
             display: flex;
             flex-direction: column;
@@ -120,6 +120,7 @@
             padding: 15px;
             border-radius: 16px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
         }
         .grid-item span.label-text {
             display: block;
@@ -191,6 +192,49 @@
             color: #888;
             font-size: 13px;
             pointer-events: none;
+        }
+
+        /* --- 新增：收合說明區塊 --- */
+        details.help-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 10px 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+        }
+        details.help-section summary {
+            font-weight: bold;
+            cursor: pointer;
+            list-style: none; /* 隱藏預設三角形 */
+            display: flex;
+            align-items: center;
+            color: #007bff;
+        }
+        /* 自定義箭頭 */
+        details.help-section summary::after {
+            content: '▼';
+            font-size: 12px;
+            margin-left: auto;
+            transition: transform 0.2s;
+        }
+        details.help-section[open] summary::after {
+            transform: rotate(180deg);
+        }
+        .help-content {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ddd;
+            line-height: 1.6;
+        }
+        .help-content p {
+            margin: 5px 0;
+        }
+        .highlight {
+            color: #d32f2f;
+            font-weight: bold;
         }
 
         #snap-btn {
@@ -314,7 +358,6 @@
                     <option value="退貨處理">退貨處理</option>
                     <option value="品溫異常">品溫異常</option>
                     <option value="異常回報">異常回報</option>
-                    <!-- 已刪除備註 -->
                     <option value="CUSTOM_INPUT" style="color:#007bff; font-weight:bold;">✏️ 自行輸入...</option>
                 </select>
                 <div id="action-manual-group">
@@ -348,6 +391,20 @@
                 </div>
             </div>
         </div>
+
+        <!-- 新增：可收合的操作說明 -->
+        <details class="help-section">
+            <summary>❓ 操作小幫手 (點擊展開)</summary>
+            <div class="help-content">
+                <p>1. <b>地點</b>：門市顯示「配送至」，其他顯示「轉運至」。</p>
+                <p>2. <b>寄庫</b>：作業選<span class="highlight">「門市寄庫」</span>，標題自動改為<span class="highlight">「寄庫：xxx」</span>。</p>
+                <p>3. <b>數量</b>：板數與箱數可擇一填寫，會自動排版。</p>
+                <p>4. <b>存檔</b>：
+                    <br>• Android：按拍照後會<span class="highlight">自動下載</span>。
+                    <br>• iPhone：長按照片選擇「加入照片」。
+                </p>
+            </div>
+        </details>
 
         <button id="snap-btn">📸 拍照存檔</button>
 
@@ -520,9 +577,7 @@
             context.fillStyle = '#333333';
             if(loc) {
                 let displayText = "";
-                // *** 智慧邏輯：寄庫 vs 配送 vs 轉運 ***
                 if (act === "門市寄庫") {
-                    // 如果作業是寄庫，不管地點是什麼，都顯示「寄庫：」表示歸屬
                     displayText = "寄庫：" + loc; 
                 } else if (loc.includes("門市")) {
                     displayText = "配送至：" + loc;
@@ -537,7 +592,6 @@
             context.fillStyle = '#666666';
             context.fillText(dateText, w - padX, currentY + 5);
 
-            // 換行
             currentY += fontSizeM * 1.6;
 
             // --- 第二行：作業項目 ---
@@ -546,12 +600,9 @@
             context.fillStyle = '#000000';
             if(act) context.fillText("作業：" + act, padX, currentY);
 
-            // 換行
             currentY += fontSizeL * 1.4;
 
             // --- 第三行：數量 (左) & 人員 (右) ---
-            
-            // 數量 (左，紅色)
             if (qtyText) {
                 context.textAlign = 'left';
                 context.fillStyle = '#D32F2F'; 
@@ -559,7 +610,6 @@
                 context.fillText(qtyText, padX, currentY);
             }
 
-            // 人員 (右，藍色)
             if (person) {
                 context.textAlign = 'right';
                 context.font = `bold ${fontSizeS}px "Microsoft JhengHei", sans-serif`;
