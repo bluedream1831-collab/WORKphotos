@@ -558,4 +558,64 @@
             
             if(loc) {
                 // *** 自動判斷邏輯開始 ***
-    
+                let displayText = "";
+                if (loc.includes("門市")) {
+                    displayText = "配送至：" + loc; // 包含「門市」則顯示配送
+                } else {
+                    displayText = "轉運至：" + loc; // 其他則視為轉運 (DC)
+                }
+                context.fillText(displayText, padX, currentY);
+            }
+
+            context.textAlign = 'right';
+            context.font = `${fontSizeS}px "Microsoft JhengHei", sans-serif`;
+            context.fillStyle = '#666666';
+            context.fillText(dateText, w - padX, currentY + 5);
+
+            // 往下移動
+            currentY += fontSizeM * 1.6;
+
+            // --- 第二行：作業項目 (左，大字) ---
+            context.textAlign = 'left';
+            context.font = `bold ${fontSizeL}px "Microsoft JhengHei", sans-serif`;
+            context.fillStyle = '#000000';
+            if(act) context.fillText("作業：" + act, padX, currentY);
+
+            // --- 第二行：數量 (右，大字，紅色) ---
+            if (qtyText) {
+                context.textAlign = 'right';
+                context.fillStyle = '#D32F2F'; // 紅色強調
+                context.fillText(qtyText, w - padX, currentY);
+            }
+
+            // 往下移動
+            currentY += fontSizeL * 1.4;
+
+            // --- 第三行：人員 (右下角) ---
+            if (person) {
+                context.textAlign = 'right';
+                context.font = `bold ${fontSizeS}px "Microsoft JhengHei", sans-serif`;
+                context.fillStyle = '#007bff'; // 藍色
+                context.fillText(`麻煩 ${person} 協助`, w - padX, currentY);
+            }
+
+            // 5. 顯示結果
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85); // 壓縮品質 0.85
+            resultImage.src = dataUrl;
+            resultArea.style.display = "flex";
+        });
+
+        // --- 重置按鈕 ---
+        resetBtn.addEventListener('click', () => {
+            resultArea.style.display = "none";
+            // 清空數量輸入，方便下一張（地點人員保留）
+            palletInput.value = "";
+            boxInput.value = "";
+        });
+
+        // 程式啟動
+        checkAutoLogin();
+
+    </script>
+</body>
+</html>
