@@ -314,7 +314,7 @@
                     <option value="退貨處理">退貨處理</option>
                     <option value="品溫異常">品溫異常</option>
                     <option value="異常回報">異常回報</option>
-                    <option value="備註：">備註：</option>
+                    <!-- 已刪除備註 -->
                     <option value="CUSTOM_INPUT" style="color:#007bff; font-weight:bold;">✏️ 自行輸入...</option>
                 </select>
                 <div id="action-manual-group">
@@ -520,7 +520,11 @@
             context.fillStyle = '#333333';
             if(loc) {
                 let displayText = "";
-                if (loc.includes("門市")) {
+                // *** 智慧邏輯：寄庫 vs 配送 vs 轉運 ***
+                if (act === "門市寄庫") {
+                    // 如果作業是寄庫，不管地點是什麼，都顯示「寄庫：」表示歸屬
+                    displayText = "寄庫：" + loc; 
+                } else if (loc.includes("門市")) {
                     displayText = "配送至：" + loc;
                 } else {
                     displayText = "轉運至：" + loc;
@@ -533,43 +537,40 @@
             context.fillStyle = '#666666';
             context.fillText(dateText, w - padX, currentY + 5);
 
-            // 換行 (第一行結束)
+            // 換行
             currentY += fontSizeM * 1.6;
 
-            // --- 第二行：作業項目 (獨佔一行) ---
+            // --- 第二行：作業項目 ---
             context.textAlign = 'left';
             context.font = `bold ${fontSizeL}px "Microsoft JhengHei", sans-serif`;
             context.fillStyle = '#000000';
             if(act) context.fillText("作業：" + act, padX, currentY);
 
-            // 換行 (第二行結束)
+            // 換行
             currentY += fontSizeL * 1.4;
 
-            // --- 第三行：數量 (左邊，紅色) & 人員 (右邊，藍色) ---
+            // --- 第三行：數量 (左) & 人員 (右) ---
             
-            // 數量 (左)
+            // 數量 (左，紅色)
             if (qtyText) {
                 context.textAlign = 'left';
-                context.fillStyle = '#D32F2F'; // 紅色
-                context.font = `bold ${fontSizeL}px "Microsoft JhengHei", sans-serif`; // 保持大字體
+                context.fillStyle = '#D32F2F'; 
+                context.font = `bold ${fontSizeL}px "Microsoft JhengHei", sans-serif`; 
                 context.fillText(qtyText, padX, currentY);
             }
 
-            // 人員 (右)
+            // 人員 (右，藍色)
             if (person) {
                 context.textAlign = 'right';
                 context.font = `bold ${fontSizeS}px "Microsoft JhengHei", sans-serif`;
                 context.fillStyle = '#007bff'; 
-                // 微調一下垂直位置，讓它跟大字體的數量底部對齊好看一點，或者直接對齊頂部
                 context.fillText(`麻煩 ${person} 協助`, w - padX, currentY + (fontSizeL - fontSizeS));
             }
 
-            // 顯示圖片
             const dataUrl = canvas.toDataURL('image/jpeg', 0.85); 
             resultImage.src = dataUrl;
             resultArea.style.display = "flex";
 
-            // 自動下載 (Android/PC)
             const link = document.createElement('a');
             const fileName = `Logistics_${Date.now()}.jpg`; 
             link.download = fileName;
