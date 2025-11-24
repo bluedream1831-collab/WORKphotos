@@ -22,7 +22,7 @@
             margin: 0; 
             padding: 10px; 
             padding-top: calc(10px + env(safe-area-inset-top)); 
-            padding-bottom: 120px; /* 增加底部留白，避免說明被按鈕擋住 */
+            padding-bottom: 120px; 
             min-height: 100vh; 
             display: flex;
             flex-direction: column;
@@ -194,7 +194,7 @@
             pointer-events: none;
         }
 
-        /* --- 新增：收合說明區塊 --- */
+        /* 可收合說明 */
         details.help-section {
             background: #fff;
             border-radius: 12px;
@@ -208,12 +208,11 @@
         details.help-section summary {
             font-weight: bold;
             cursor: pointer;
-            list-style: none; /* 隱藏預設三角形 */
+            list-style: none;
             display: flex;
             align-items: center;
             color: #007bff;
         }
-        /* 自定義箭頭 */
         details.help-section summary::after {
             content: '▼';
             font-size: 12px;
@@ -392,13 +391,13 @@
             </div>
         </div>
 
-        <!-- 新增：可收合的操作說明 -->
+        <!-- 可收合的操作說明 -->
         <details class="help-section">
             <summary>❓ 操作小幫手 (點擊展開)</summary>
             <div class="help-content">
                 <p>1. <b>地點</b>：門市顯示「配送至」，其他顯示「轉運至」。</p>
                 <p>2. <b>寄庫</b>：作業選<span class="highlight">「門市寄庫」</span>，標題自動改為<span class="highlight">「寄庫：xxx」</span>。</p>
-                <p>3. <b>數量</b>：板數與箱數可擇一填寫，會自動排版。</p>
+                <p>3. <b>數量</b>：自動顯示為「數量：X板又X箱」。</p>
                 <p>4. <b>存檔</b>：
                     <br>• Android：按拍照後會<span class="highlight">自動下載</span>。
                     <br>• iPhone：長按照片選擇「加入照片」。
@@ -559,9 +558,16 @@
             
             const pVal = palletInput.value.trim();
             const bVal = boxInput.value.trim();
+            
+            // --- 數量字串組合邏輯 (新) ---
             let qtyText = "";
-            if(pVal !== "") qtyText += `${pVal}板`;
-            if(bVal !== "") qtyText += (qtyText ? " / " : "") + `${bVal}箱`;
+            if (pVal !== "" && bVal !== "") {
+                qtyText = `數量：${pVal}板又${bVal}箱`; // 都有時用「又」
+            } else if (pVal !== "") {
+                qtyText = `數量：${pVal}板`;
+            } else if (bVal !== "") {
+                qtyText = `數量：${bVal}箱`;
+            }
             
             const fontSizeL = Math.floor(w * 0.07); 
             const fontSizeM = Math.floor(w * 0.05); 
