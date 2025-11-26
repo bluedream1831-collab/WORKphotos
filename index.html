@@ -2,6 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <!-- PWA 核心設定 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,6 +16,7 @@
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2983/2983067.png">
 
     <style>
+        /* 1. 基礎設定 */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "微軟正黑體", sans-serif; 
             background: #f4f4f4; 
@@ -33,6 +35,7 @@
             -webkit-user-select: none;
         }
 
+        /* --- 登入畫面 --- */
         #login-screen {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -83,6 +86,7 @@
             display: none;
         }
 
+        /* --- 主程式區塊 --- */
         #app-content {
             display: none; 
             flex-direction: column;
@@ -91,6 +95,7 @@
             margin: 0 auto;
         }
 
+        /* 2. 相機區塊 */
         #camera-wrapper {
             width: 100%;
             height: 55vh; 
@@ -112,6 +117,7 @@
             object-fit: cover;
         }
 
+        /* 3. 控制區塊 */
         .controls-grid {
             display: grid;
             grid-template-columns: 1fr 1fr; 
@@ -148,6 +154,7 @@
             background-size: 12px auto;
         }
 
+        /* 作業切換區 */
         #action-manual-group {
             display: none; 
             gap: 5px;
@@ -171,6 +178,7 @@
             justify-content: center;
         }
 
+        /* 數量輸入 */
         .input-group {
             display: flex;
             gap: 8px;
@@ -194,7 +202,7 @@
             pointer-events: none;
         }
 
-        /* 可收合說明 */
+        /* 4. 可收合說明區塊 */
         details.help-section {
             background: #fff;
             border-radius: 12px;
@@ -236,6 +244,7 @@
             font-weight: bold;
         }
 
+        /* 5. 拍照按鈕 */
         #snap-btn {
             position: fixed;
             bottom: 30px;
@@ -260,6 +269,7 @@
             transform: translateX(-50%) scale(0.95);
         }
 
+        /* 6. 結果顯示區 */
         #result-area {
             display: none;
             position: fixed;
@@ -318,10 +328,12 @@
 
     <!-- 主程式區塊 -->
     <div id="app-content">
+        <!-- 相機 -->
         <div id="camera-wrapper">
             <video id="video" autoplay playsinline></video>
         </div>
 
+        <!-- 控制面板 -->
         <div class="controls-grid">
             <div class="grid-item">
                 <span class="label-text">📍 目的地/門市 (自動識別)</span>
@@ -355,6 +367,8 @@
                     <option value="門市寄庫">門市寄庫</option>
                     <option value="進貨驗收">進貨驗收</option>
                     <option value="退貨處理">退貨處理</option>
+                    <!-- 新增選項 -->
+                    <option value="待客服通知處理">待客服通知處理</option>
                     <option value="品溫異常">品溫異常</option>
                     <option value="異常回報">異常回報</option>
                     <option value="CUSTOM_INPUT" style="color:#007bff; font-weight:bold;">✏️ 自行輸入...</option>
@@ -391,7 +405,7 @@
             </div>
         </div>
 
-        <!-- 可收合的操作說明 -->
+        <!-- 操作說明 -->
         <details class="help-section">
             <summary>❓ 操作小幫手 (點擊展開)</summary>
             <div class="help-content">
@@ -424,6 +438,7 @@
     </div>
 
     <script>
+        // --- 設定與記憶鍵值 ---
         const ACCESS_PASSWORD = "8888"; 
         const LOGIN_KEY = "LOGISTICS_LOGIN_DATE"; 
         const STORAGE_LOC_KEY = "LOGISTICS_LAST_LOCATION";
@@ -452,6 +467,7 @@
         const actionInputManual = document.getElementById('action-input-manual');
         const actionResetBtn = document.getElementById('action-reset-btn');
 
+        // --- 登入與記憶 ---
         function checkAutoLogin() {
             const today = new Date().toDateString();
             if (localStorage.getItem(LOGIN_KEY) === today) enterApp(); 
@@ -488,6 +504,7 @@
         locationSelect.addEventListener('change', () => localStorage.setItem(STORAGE_LOC_KEY, locationSelect.value));
         personSelect.addEventListener('change', () => localStorage.setItem(STORAGE_PERSON_KEY, personSelect.value));
 
+        // --- 作業切換 ---
         actionSelect.addEventListener('change', function() {
             if (this.value === 'CUSTOM_INPUT') {
                 this.style.display = 'none';
@@ -503,6 +520,7 @@
             actionInputManual.value = ""; 
         });
 
+        // --- 相機 (高畫質) ---
         function startCamera() {
             const constraints = {
                 video: {
@@ -527,6 +545,7 @@
                 });
         }
 
+        // --- 拍照合成邏輯 ---
         snapBtn.addEventListener('click', () => {
             const context = canvas.getContext('2d');
             
@@ -559,16 +578,17 @@
             const pVal = palletInput.value.trim();
             const bVal = boxInput.value.trim();
             
-            // --- 數量字串組合邏輯 (新) ---
+            // --- 數量字串組合 ---
             let qtyText = "";
             if (pVal !== "" && bVal !== "") {
-                qtyText = `數量：${pVal}板又${bVal}箱`; // 都有時用「又」
+                qtyText = `數量：${pVal}板又${bVal}箱`;
             } else if (pVal !== "") {
                 qtyText = `數量：${pVal}板`;
             } else if (bVal !== "") {
                 qtyText = `數量：${bVal}箱`;
             }
             
+            // --- 字體設定 ---
             const fontSizeL = Math.floor(w * 0.07); 
             const fontSizeM = Math.floor(w * 0.05); 
             const fontSizeS = Math.floor(w * 0.035); 
@@ -577,12 +597,13 @@
 
             context.textBaseline = 'top';
             
-            // --- 第一行：地點 (左) & 時間 (右) ---
+            // --- 1. 地點 & 時間 ---
             context.textAlign = 'left';
             context.font = `bold ${fontSizeM}px "Microsoft JhengHei", sans-serif`;
             context.fillStyle = '#333333';
             if(loc) {
                 let displayText = "";
+                // 邏輯判斷
                 if (act === "門市寄庫") {
                     displayText = "寄庫：" + loc; 
                 } else if (loc.includes("門市")) {
@@ -600,7 +621,7 @@
 
             currentY += fontSizeM * 1.6;
 
-            // --- 第二行：作業項目 ---
+            // --- 2. 作業項目 ---
             context.textAlign = 'left';
             context.font = `bold ${fontSizeL}px "Microsoft JhengHei", sans-serif`;
             context.fillStyle = '#000000';
@@ -608,7 +629,7 @@
 
             currentY += fontSizeL * 1.4;
 
-            // --- 第三行：數量 (左) & 人員 (右) ---
+            // --- 3. 數量 & 人員 ---
             if (qtyText) {
                 context.textAlign = 'left';
                 context.fillStyle = '#D32F2F'; 
@@ -623,10 +644,12 @@
                 context.fillText(`麻煩 ${person} 協助`, w - padX, currentY + (fontSizeL - fontSizeS));
             }
 
+            // 顯示結果
             const dataUrl = canvas.toDataURL('image/jpeg', 0.85); 
             resultImage.src = dataUrl;
             resultArea.style.display = "flex";
 
+            // 自動下載 (Android/PC)
             const link = document.createElement('a');
             const fileName = `Logistics_${Date.now()}.jpg`; 
             link.download = fileName;
@@ -636,6 +659,7 @@
             document.body.removeChild(link);
         });
 
+        // 重置
         resetBtn.addEventListener('click', () => {
             resultArea.style.display = "none";
             palletInput.value = "";
