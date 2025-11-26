@@ -151,6 +151,7 @@
             border-radius: 16px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             margin-bottom: 15px;
+            position: relative; /* 為了放鎖定按鈕 */
         }
         .grid-item span.label-text {
             display: block;
@@ -171,6 +172,13 @@
             height: 48px; 
             -webkit-appearance: none;
         }
+        /* 鎖定時的樣式 */
+        select:disabled, input:disabled {
+            background-color: #f0f0f0;
+            color: #999;
+            border-color: #e0e0e0;
+        }
+
         select {
             background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
             background-repeat: no-repeat;
@@ -222,6 +230,28 @@
             color: #888;
             font-size: 13px;
             pointer-events: none;
+        }
+
+        /* 鎖定按鈕 */
+        #lock-btn {
+            grid-column: 1 / -1; /* 佔滿整行 */
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+        #lock-btn.locked {
+            background: #e74c3c; /* 紅色代表已鎖定/停止修改 */
         }
 
         /* 4. 可收合說明區塊 */
@@ -354,7 +384,7 @@
         <div id="camera-wrapper">
             <video id="video" autoplay playsinline></video>
             
-            <!-- 比例切換按鈕 (已移除 1:1) -->
+            <!-- 比例切換按鈕 -->
             <div id="ratio-controls">
                 <div class="ratio-btn active" onclick="setRatio(0.75, this)">3:4</div>
                 <div class="ratio-btn" onclick="setRatio(0.5625, this)">16:9</div>
@@ -363,6 +393,9 @@
 
         <!-- 控制面板 -->
         <div class="controls-grid">
+            <!-- 鎖定按鈕 -->
+            <button id="lock-btn">🔓 鎖定設定 (防止誤觸)</button>
+
             <div class="grid-item">
                 <span class="label-text">📍 目的地/門市 (自動識別)</span>
                 <select id="location-select">
@@ -436,10 +469,10 @@
         <details class="help-section">
             <summary>❓ 操作小幫手 (點擊展開)</summary>
             <div class="help-content">
-                <p>1. <b>切換比例</b>：點擊畫面右下角的按鈕 (3:4 / 16:9)。</p>
-                <p>2. <b>地點</b>：門市顯示「配送至」，其他顯示「轉運至」。</p>
-                <p>3. <b>寄庫</b>：作業選<span class="highlight">「門市寄庫」</span>，標題自動改為<span class="highlight">「寄庫：xxx」</span>。</p>
-                <p>4. <b>數量</b>：自動顯示為「數量：X板又X箱」。</p>
+                <p>1. <b>鎖定設定</b>：點擊上方的「🔓」可鎖定地點/作業/人員，防止誤觸，但<b>數量仍可輸入</b>。</p>
+                <p>2. <b>切換比例</b>：點擊畫面右下角的按鈕 (3:4 / 16:9)。</p>
+                <p>3. <b>地點</b>：門市顯示「配送至」，其他顯示「轉運至」。</p>
+                <p>4. <b>寄庫</b>：作業選<span class="highlight">「門市寄庫」</span>，標題自動改為<span class="highlight">「寄庫：xxx」</span>。</p>
                 <p>5. <b>存檔</b>：
                     <br>• Android：按拍照後會<span class="highlight">自動下載</span>。
                     <br>• iPhone：長按照片選擇「加入照片」。
@@ -472,6 +505,7 @@
         const STORAGE_PERSON_KEY = "LOGISTICS_LAST_PERSON";
 
         let currentAspectRatio = 0.75; 
+        let isSettingsLocked = false; // 鎖定狀態
 
         const loginScreen = document.getElementById('login-screen');
         const appContent = document.getElementById('app-content');
@@ -496,6 +530,28 @@
         const actionManualGroup = document.getElementById('action-manual-group');
         const actionInputManual = document.getElementById('action-input-manual');
         const actionResetBtn = document.getElementById('action-reset-btn');
+        
+        const lockBtn = document.getElementById('lock-btn');
+
+        // --- 鎖定功能 ---
+        lockBtn.addEventListener('click', () => {
+            isSettingsLocked = !isSettingsLocked;
+            
+            // 鎖定以下欄位，但「數量」保持開啟
+            const targets = [locationSelect, actionSelect, personSelect, actionInputManual, actionResetBtn];
+            
+            targets.forEach(el => {
+                el.disabled = isSettingsLocked;
+            });
+
+            if (isSettingsLocked) {
+                lockBtn.innerHTML = "🔒 已鎖定 (點擊解鎖)";
+                lockBtn.classList.add('locked');
+            } else {
+                lockBtn.innerHTML = "🔓 鎖定設定 (防止誤觸)";
+                lockBtn.classList.remove('locked');
+            }
+        });
 
         // --- 比例切換 ---
         function setRatio(ratio, btnElement) {
@@ -595,8 +651,7 @@
             
             const sourceY = (rawH - targetH) / 2;
             
-            // *** 修正重點：白邊高度改為寬度的 38% ***
-            // 之前的 0.28 太小，現在加大到 0.38，確保手機直拍時有足夠空間放三行大字
+            // 白邊高度：寬度的 38%
             const footerHeight = w * 0.38; 
             
             canvas.width = w;
@@ -635,7 +690,7 @@
             const fontSizeS = Math.floor(w * 0.035); 
             const padX = w * 0.05; 
             
-            // 文字起始位置：圖片結束處 + 白邊的 12%
+            // 文字起始位置
             let currentY = targetH + (footerHeight * 0.12); 
 
             context.textBaseline = 'top';
@@ -661,7 +716,6 @@
             context.fillStyle = '#666666';
             context.fillText(dateText, w - padX, currentY + 5);
 
-            // 調整行距：更緊湊一點，確保最後一行不切
             currentY += fontSizeM * 1.5; 
 
             // --- 2. 作業項目 ---
