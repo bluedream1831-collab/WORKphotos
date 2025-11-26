@@ -129,16 +129,16 @@
             background: rgba(0, 0, 0, 0.5);
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 5px 10px;
+            padding: 5px 12px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 13px;
             cursor: pointer;
             backdrop-filter: blur(4px);
+            font-weight: bold;
         }
         .ratio-btn.active {
             background: #007bff;
             border-color: #007bff;
-            font-weight: bold;
         }
 
         /* 3. 控制區塊 */
@@ -354,9 +354,8 @@
         <div id="camera-wrapper">
             <video id="video" autoplay playsinline></video>
             
-            <!-- 比例切換按鈕 -->
+            <!-- 比例切換按鈕 (已移除 1:1) -->
             <div id="ratio-controls">
-                <div class="ratio-btn" onclick="setRatio(1, this)">1:1</div>
                 <div class="ratio-btn active" onclick="setRatio(0.75, this)">3:4</div>
                 <div class="ratio-btn" onclick="setRatio(0.5625, this)">16:9</div>
             </div>
@@ -437,7 +436,7 @@
         <details class="help-section">
             <summary>❓ 操作小幫手 (點擊展開)</summary>
             <div class="help-content">
-                <p>1. <b>切換比例</b>：點擊畫面右下角的按鈕 (1:1 / 3:4 / 16:9)。</p>
+                <p>1. <b>切換比例</b>：點擊畫面右下角的按鈕 (3:4 / 16:9)。</p>
                 <p>2. <b>地點</b>：門市顯示「配送至」，其他顯示「轉運至」。</p>
                 <p>3. <b>寄庫</b>：作業選<span class="highlight">「門市寄庫」</span>，標題自動改為<span class="highlight">「寄庫：xxx」</span>。</p>
                 <p>4. <b>數量</b>：自動顯示為「數量：X板又X箱」。</p>
@@ -590,17 +589,15 @@
             // 計算目標高度
             let targetH = w / currentAspectRatio;
             
-            // 如果在電腦橫向螢幕上，計算出的高度可能比原始還高，這時取原始高度
-            // 這樣會導致看起來是寬螢幕，但沒關係
             if (targetH > rawH) {
                 targetH = rawH; 
             }
             
             const sourceY = (rawH - targetH) / 2;
             
-            // *** 關鍵修正：白邊高度改用「寬度」的百分比 ***
-            // 這樣無論手機(直)或電腦(橫)，只要寬度一樣，字體與白邊比例就一致，不會被切掉
-            const footerHeight = w * 0.28; 
+            // *** 修正重點：白邊高度改為寬度的 38% ***
+            // 之前的 0.28 太小，現在加大到 0.38，確保手機直拍時有足夠空間放三行大字
+            const footerHeight = w * 0.38; 
             
             canvas.width = w;
             canvas.height = targetH + footerHeight;
@@ -638,8 +635,8 @@
             const fontSizeS = Math.floor(w * 0.035); 
             const padX = w * 0.05; 
             
-            // 文字起始位置：圖片結束處 + 白邊的 15%
-            let currentY = targetH + (footerHeight * 0.15); 
+            // 文字起始位置：圖片結束處 + 白邊的 12%
+            let currentY = targetH + (footerHeight * 0.12); 
 
             context.textBaseline = 'top';
             
@@ -664,7 +661,8 @@
             context.fillStyle = '#666666';
             context.fillText(dateText, w - padX, currentY + 5);
 
-            currentY += fontSizeM * 1.6;
+            // 調整行距：更緊湊一點，確保最後一行不切
+            currentY += fontSizeM * 1.5; 
 
             // --- 2. 作業項目 ---
             context.textAlign = 'left';
