@@ -151,7 +151,7 @@
             border-radius: 16px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             margin-bottom: 15px;
-            position: relative; /* 為了放鎖定按鈕 */
+            position: relative; 
         }
         .grid-item span.label-text {
             display: block;
@@ -234,7 +234,7 @@
 
         /* 鎖定按鈕 */
         #lock-btn {
-            grid-column: 1 / -1; /* 佔滿整行 */
+            grid-column: 1 / -1; 
             background: #6c757d;
             color: white;
             border: none;
@@ -251,7 +251,7 @@
             transition: background 0.3s;
         }
         #lock-btn.locked {
-            background: #e74c3c; /* 紅色代表已鎖定/停止修改 */
+            background: #e74c3c; 
         }
 
         /* 4. 可收合說明區塊 */
@@ -446,6 +446,8 @@
                     <option value="早班ES人員">早班ES人員</option>
                     <option value="晚班ES人員">晚班ES人員</option>
                     <option value="庫務人員">庫務人員</option>
+                    <option value="4米庫務人員">4米庫務人員</option>
+                    <option value="7米庫務人員">7米庫務人員</option>
                     <option value="幹部人員">幹部人員</option>
                 </select>
             </div>
@@ -505,7 +507,7 @@
         const STORAGE_PERSON_KEY = "LOGISTICS_LAST_PERSON";
 
         let currentAspectRatio = 0.75; 
-        let isSettingsLocked = false; // 鎖定狀態
+        let isSettingsLocked = false; 
 
         const loginScreen = document.getElementById('login-screen');
         const appContent = document.getElementById('app-content');
