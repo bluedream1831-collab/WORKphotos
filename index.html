@@ -209,6 +209,7 @@
             justify-content: center;
         }
 
+        /* 數量輸入區塊 (新設計) */
         .input-group {
             display: flex;
             gap: 8px;
@@ -217,19 +218,43 @@
             position: relative;
             flex: 1;
         }
-        .unit-input-wrapper input {
+        /* 自填輸入框組合 (預設隱藏) */
+        .manual-qty-group {
+            display: none; /* JS控制 */
+            gap: 2px;
+            width: 100%;
+        }
+        .manual-qty-group input {
             text-align: center; 
             padding: 5px 25px 5px 5px;
             font-weight: bold;
+            border: 1px solid #007bff; 
+            background-color: #f0f8ff; 
+            flex: 1;
+        }
+        /* 返回選單按鈕 */
+        .qty-reset-btn {
+            width: 40px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .unit-input-wrapper .unit {
             position: absolute;
-            right: 10px;
+            right: 8px;
             top: 50%;
             transform: translateY(-50%);
             color: #888;
-            font-size: 13px;
+            font-size: 12px;
             pointer-events: none;
+            z-index: 5;
         }
 
         /* 鎖定按鈕 */
@@ -453,16 +478,57 @@
             </div>
 
             <div class="grid-item">
-                <span class="label-text">📝 數量 (填數字)</span>
+                <span class="label-text">📝 數量 (可選個位數)</span>
                 <div class="input-group">
+                    
+                    <!-- 板數 (選單 + 手動) -->
                     <div class="unit-input-wrapper">
-                        <input type="number" id="pallet-input" placeholder="" pattern="[0-9]*" inputmode="numeric">
+                        <!-- 下拉選單 -->
+                        <select id="pallet-select">
+                            <option value="">板數</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="MANUAL" style="color:#007bff; font-weight:bold;">✏️ 自填...</option>
+                        </select>
+                        <!-- 手動輸入框 (預設隱藏) -->
+                        <div id="pallet-manual-box" class="manual-qty-group">
+                            <input type="number" id="pallet-input-manual" placeholder="#" pattern="[0-9]*" inputmode="numeric">
+                            <button class="qty-reset-btn" type="button" onclick="resetQty('pallet')">↩</button>
+                        </div>
                         <span class="unit">板</span>
                     </div>
+
+                    <!-- 箱數 (選單 + 手動) -->
                     <div class="unit-input-wrapper">
-                        <input type="number" id="box-input" placeholder="" pattern="[0-9]*" inputmode="numeric">
+                        <!-- 下拉選單 -->
+                        <select id="box-select">
+                            <option value="">箱數</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="MANUAL" style="color:#007bff; font-weight:bold;">✏️ 自填...</option>
+                        </select>
+                        <!-- 手動輸入框 (預設隱藏) -->
+                        <div id="box-manual-box" class="manual-qty-group">
+                            <input type="number" id="box-input-manual" placeholder="#" pattern="[0-9]*" inputmode="numeric">
+                            <button class="qty-reset-btn" type="button" onclick="resetQty('box')">↩</button>
+                        </div>
                         <span class="unit">箱</span>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -471,14 +537,11 @@
         <details class="help-section">
             <summary>❓ 操作小幫手 (點擊展開)</summary>
             <div class="help-content">
-                <p>1. <b>鎖定設定</b>：點擊上方的「🔓」可鎖定地點/作業/人員，防止誤觸，但<b>數量仍可輸入</b>。</p>
-                <p>2. <b>切換比例</b>：點擊畫面右下角的按鈕 (3:4 / 16:9)。</p>
-                <p>3. <b>地點</b>：門市顯示「配送至」，其他顯示「轉運至」。</p>
+                <p>1. <b>數量選擇</b>：點選數字可快速輸入 (1-9)；若超過9請選<span class="highlight">「✏️ 自填」</span>。</p>
+                <p>2. <b>鎖定設定</b>：點擊上方「🔓」可鎖定地點/作業/人員，防止誤觸。</p>
+                <p>3. <b>切換比例</b>：點擊畫面右下角的按鈕 (3:4 / 16:9)。</p>
                 <p>4. <b>寄庫</b>：作業選<span class="highlight">「門市寄庫」</span>，標題自動改為<span class="highlight">「寄庫：xxx」</span>。</p>
-                <p>5. <b>存檔</b>：
-                    <br>• Android：按拍照後會<span class="highlight">自動下載</span>。
-                    <br>• iPhone：長按照片選擇「加入照片」。
-                </p>
+                <p>5. <b>存檔</b>：Android 自動下載；iPhone 長按照片儲存。</p>
             </div>
         </details>
 
@@ -525,8 +588,15 @@
         
         const locationSelect = document.getElementById('location-select');
         const personSelect = document.getElementById('person-select');
-        const palletInput = document.getElementById('pallet-input');
-        const boxInput = document.getElementById('box-input');
+        
+        // 數量相關變數
+        const palletSelect = document.getElementById('pallet-select');
+        const palletManualBox = document.getElementById('pallet-manual-box');
+        const palletInputManual = document.getElementById('pallet-input-manual');
+
+        const boxSelect = document.getElementById('box-select');
+        const boxManualBox = document.getElementById('box-manual-box');
+        const boxInputManual = document.getElementById('box-input-manual');
 
         const actionSelect = document.getElementById('action-select');
         const actionManualGroup = document.getElementById('action-manual-group');
@@ -535,11 +605,52 @@
         
         const lockBtn = document.getElementById('lock-btn');
 
+        // --- 數量混合輸入邏輯 ---
+        function setupQtyToggle(selectElem, manualBox, manualInput) {
+            selectElem.addEventListener('change', function() {
+                if (this.value === 'MANUAL') {
+                    this.style.display = 'none';
+                    manualBox.style.display = 'flex';
+                    manualInput.focus();
+                }
+            });
+        }
+
+        // 綁定板數與箱數的切換事件
+        setupQtyToggle(palletSelect, palletManualBox, palletInputManual);
+        setupQtyToggle(boxSelect, boxManualBox, boxInputManual);
+
+        // 重置回選單模式
+        window.resetQty = function(type) {
+            if (type === 'pallet') {
+                palletManualBox.style.display = 'none';
+                palletSelect.style.display = 'block';
+                palletSelect.value = "";
+                palletInputManual.value = "";
+            } else if (type === 'box') {
+                boxManualBox.style.display = 'none';
+                boxSelect.style.display = 'block';
+                boxSelect.value = "";
+                boxInputManual.value = "";
+            }
+        };
+
+        // 取得最終數量值
+        function getFinalQty(selectElem, manualInputElem) {
+            // 如果選單是隱藏的，代表在手動模式，取 input 值
+            if (selectElem.style.display === 'none') {
+                return manualInputElem.value.trim();
+            }
+            // 否則取選單值 (如果是 "MANUAL" 其實不會走到這，因為已隱藏，但防呆一下)
+            const val = selectElem.value;
+            return val === 'MANUAL' ? "" : val;
+        }
+
         // --- 鎖定功能 ---
         lockBtn.addEventListener('click', () => {
             isSettingsLocked = !isSettingsLocked;
             
-            // 鎖定以下欄位，但「數量」保持開啟
+            // 鎖定除數量外的欄位
             const targets = [locationSelect, actionSelect, personSelect, actionInputManual, actionResetBtn];
             
             targets.forEach(el => {
@@ -644,7 +755,6 @@
             const w = video.videoWidth;
             const rawH = video.videoHeight;
             
-            // 計算目標高度
             let targetH = w / currentAspectRatio;
             
             if (targetH > rawH) {
@@ -653,7 +763,6 @@
             
             const sourceY = (rawH - targetH) / 2;
             
-            // 白邊高度：寬度的 38%
             const footerHeight = w * 0.38; 
             
             canvas.width = w;
@@ -675,8 +784,9 @@
             const person = personSelect.value; 
             const dateText = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
             
-            const pVal = palletInput.value.trim();
-            const bVal = boxInput.value.trim();
+            // *** 修改：從新邏輯取得數量 ***
+            const pVal = getFinalQty(palletSelect, palletInputManual);
+            const bVal = getFinalQty(boxSelect, boxInputManual);
             
             let qtyText = "";
             if (pVal !== "" && bVal !== "") {
@@ -692,7 +802,6 @@
             const fontSizeS = Math.floor(w * 0.035); 
             const padX = w * 0.05; 
             
-            // 文字起始位置
             let currentY = targetH + (footerHeight * 0.12); 
 
             context.textBaseline = 'top';
@@ -756,10 +865,12 @@
             document.body.removeChild(link);
         });
 
+        // 重置按鈕 (僅關閉結果頁，不清除數量，方便連續作業)
         resetBtn.addEventListener('click', () => {
             resultArea.style.display = "none";
-            palletInput.value = "";
-            boxInput.value = "";
+            // 如果您希望拍完照後自動清空數量，請取消下面兩行的註解
+            // resetQty('pallet');
+            // resetQty('box');
         });
 
         checkAutoLogin();
