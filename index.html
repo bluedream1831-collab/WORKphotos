@@ -209,7 +209,7 @@
             justify-content: center;
         }
 
-        /* 數量輸入區塊 (新設計) */
+        /* 數量輸入區塊 */
         .input-group {
             display: flex;
             gap: 8px;
@@ -218,9 +218,9 @@
             position: relative;
             flex: 1;
         }
-        /* 自填輸入框組合 (預設隱藏) */
+        /* 自填輸入框組合 */
         .manual-qty-group {
-            display: none; /* JS控制 */
+            display: none; 
             gap: 2px;
             width: 100%;
         }
@@ -232,7 +232,6 @@
             background-color: #f0f8ff; 
             flex: 1;
         }
-        /* 返回選單按鈕 */
         .qty-reset-btn {
             width: 40px;
             background: #6c757d;
@@ -480,10 +479,8 @@
             <div class="grid-item">
                 <span class="label-text">📝 數量 (可選個位數)</span>
                 <div class="input-group">
-                    
-                    <!-- 板數 (選單 + 手動) -->
+                    <!-- 板數 -->
                     <div class="unit-input-wrapper">
-                        <!-- 下拉選單 -->
                         <select id="pallet-select">
                             <option value="">板數</option>
                             <option value="1">1</option>
@@ -497,7 +494,6 @@
                             <option value="9">9</option>
                             <option value="MANUAL" style="color:#007bff; font-weight:bold;">✏️ 自填...</option>
                         </select>
-                        <!-- 手動輸入框 (預設隱藏) -->
                         <div id="pallet-manual-box" class="manual-qty-group">
                             <input type="number" id="pallet-input-manual" placeholder="#" pattern="[0-9]*" inputmode="numeric">
                             <button class="qty-reset-btn" type="button" onclick="resetQty('pallet')">↩</button>
@@ -505,9 +501,8 @@
                         <span class="unit">板</span>
                     </div>
 
-                    <!-- 箱數 (選單 + 手動) -->
+                    <!-- 箱數 -->
                     <div class="unit-input-wrapper">
-                        <!-- 下拉選單 -->
                         <select id="box-select">
                             <option value="">箱數</option>
                             <option value="1">1</option>
@@ -521,14 +516,12 @@
                             <option value="9">9</option>
                             <option value="MANUAL" style="color:#007bff; font-weight:bold;">✏️ 自填...</option>
                         </select>
-                        <!-- 手動輸入框 (預設隱藏) -->
                         <div id="box-manual-box" class="manual-qty-group">
                             <input type="number" id="box-input-manual" placeholder="#" pattern="[0-9]*" inputmode="numeric">
                             <button class="qty-reset-btn" type="button" onclick="resetQty('box')">↩</button>
                         </div>
                         <span class="unit">箱</span>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -589,7 +582,6 @@
         const locationSelect = document.getElementById('location-select');
         const personSelect = document.getElementById('person-select');
         
-        // 數量相關變數
         const palletSelect = document.getElementById('pallet-select');
         const palletManualBox = document.getElementById('pallet-manual-box');
         const palletInputManual = document.getElementById('pallet-input-manual');
@@ -616,11 +608,9 @@
             });
         }
 
-        // 綁定板數與箱數的切換事件
         setupQtyToggle(palletSelect, palletManualBox, palletInputManual);
         setupQtyToggle(boxSelect, boxManualBox, boxInputManual);
 
-        // 重置回選單模式
         window.resetQty = function(type) {
             if (type === 'pallet') {
                 palletManualBox.style.display = 'none';
@@ -635,13 +625,10 @@
             }
         };
 
-        // 取得最終數量值
         function getFinalQty(selectElem, manualInputElem) {
-            // 如果選單是隱藏的，代表在手動模式，取 input 值
             if (selectElem.style.display === 'none') {
                 return manualInputElem.value.trim();
             }
-            // 否則取選單值 (如果是 "MANUAL" 其實不會走到這，因為已隱藏，但防呆一下)
             const val = selectElem.value;
             return val === 'MANUAL' ? "" : val;
         }
@@ -649,14 +636,10 @@
         // --- 鎖定功能 ---
         lockBtn.addEventListener('click', () => {
             isSettingsLocked = !isSettingsLocked;
-            
-            // 鎖定除數量外的欄位
             const targets = [locationSelect, actionSelect, personSelect, actionInputManual, actionResetBtn];
-            
             targets.forEach(el => {
                 el.disabled = isSettingsLocked;
             });
-
             if (isSettingsLocked) {
                 lockBtn.innerHTML = "🔒 已鎖定 (點擊解鎖)";
                 lockBtn.classList.add('locked');
@@ -756,21 +739,23 @@
             const rawH = video.videoHeight;
             
             let targetH = w / currentAspectRatio;
-            
             if (targetH > rawH) {
                 targetH = rawH; 
             }
-            
             const sourceY = (rawH - targetH) / 2;
             
-            const footerHeight = w * 0.38; 
+            // *** 修改：文字改到上方 ***
+            const headerHeight = w * 0.38; // 38% 的寬度作為頭部高度 (白邊)
             
             canvas.width = w;
-            canvas.height = targetH + footerHeight;
+            canvas.height = targetH + headerHeight;
 
+            // 1. 畫白色表頭 (Top)
             context.fillStyle = "#FFFFFF";
-            context.fillRect(0, 0, canvas.width, canvas.height);
-            context.drawImage(video, 0, sourceY, w, targetH, 0, 0, w, targetH);
+            context.fillRect(0, 0, w, headerHeight);
+
+            // 2. 畫照片 (表頭下方)
+            context.drawImage(video, 0, sourceY, w, targetH, 0, headerHeight, w, targetH);
 
             let act = "";
             if (actionSelect.style.display !== 'none') {
@@ -784,7 +769,6 @@
             const person = personSelect.value; 
             const dateText = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
             
-            // *** 修改：從新邏輯取得數量 ***
             const pVal = getFinalQty(palletSelect, palletInputManual);
             const bVal = getFinalQty(boxSelect, boxInputManual);
             
@@ -797,12 +781,14 @@
                 qtyText = `數量：${bVal}箱`;
             }
             
+            // 字體回復為「乾淨版」大小
             const fontSizeL = Math.floor(w * 0.07); 
             const fontSizeM = Math.floor(w * 0.05); 
             const fontSizeS = Math.floor(w * 0.035); 
             const padX = w * 0.05; 
             
-            let currentY = targetH + (footerHeight * 0.12); 
+            // 文字起始位置：表頭的 15% 處開始
+            let currentY = headerHeight * 0.15; 
 
             context.textBaseline = 'top';
             
@@ -827,7 +813,7 @@
             context.fillStyle = '#666666';
             context.fillText(dateText, w - padX, currentY + 5);
 
-            currentY += fontSizeM * 1.5; 
+            currentY += fontSizeM * 1.5;
 
             // --- 2. 作業項目 ---
             context.textAlign = 'left';
@@ -865,12 +851,8 @@
             document.body.removeChild(link);
         });
 
-        // 重置按鈕 (僅關閉結果頁，不清除數量，方便連續作業)
         resetBtn.addEventListener('click', () => {
             resultArea.style.display = "none";
-            // 如果您希望拍完照後自動清空數量，請取消下面兩行的註解
-            // resetQty('pallet');
-            // resetQty('box');
         });
 
         checkAutoLogin();
